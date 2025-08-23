@@ -3,175 +3,135 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>4位数字可逆加密（密钥置换，无碰撞）</title>
+<title>4位数字加密解密</title>
 <style>
-  :root{--bg:#f7f7f8;--bd:#e5e7eb;--fg:#111;--muted:#666;}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  .wrap{max-width:700px;margin:40px auto;padding:0 16px}
-  .card{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:20px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
-  h1{font-size:20px;margin:0 0 12px}
-  p.small{color:var(--muted);margin:8px 0 16px}
-  label{display:block;margin:10px 0 6px;font-weight:600}
-  input[type=text]{width:100%;box-sizing:border-box;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;outline:none}
-  .row{display:grid;grid-template-columns:1fr auto;gap:10px}
-  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-  button{border:1px solid var(--bd);background:#111;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
-  button.sec{background:#fff;color:#111}
-  .out{font:600 18px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px dashed var(--bd);border-radius:10px;padding:10px 12px;background:#f6f8fa}
-  .muted{color:var(--muted)}
-  .ok{color:#0a7a2f}.err{color:#b00020}
+  body{margin:0;padding:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:#f2f2f7}
+  .wrap{max-width:480px;margin:20px auto;padding:0 12px}
+  .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.1);margin-bottom:16px}
+  h1{text-align:center;font-size:20px;margin:0 0 14px}
+  label{display:block;margin-bottom:6px;font-weight:600}
+  input[type=text]{width:100%;border:1px solid #ddd;border-radius:10px;padding:12px;font-size:18px;box-sizing:border-box}
+  .btns{display:flex;justify-content:center;gap:12px;margin:16px 0}
+  button{flex:1;padding:12px;font-size:18px;border-radius:12px;border:none;font-weight:600;cursor:pointer}
+  .btnEnc{background:#007aff;color:#fff}
+  .btnDec{background:#34c759;color:#fff}
+  .block{padding:16px;border-radius:12px;margin-bottom:12px}
+  .encBlock{background:#e7f0ff}
+  .decBlock{background:#e6fbea}
+  .out{font:600 20px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;text-align:center;margin-top:10px}
+  .msg{text-align:center;font-size:14px;margin-top:6px;color:#666}
+  .keyBox{margin-bottom:14px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>4位数字可逆加密（密钥置换）</h1>
-    <p class="small">输入/输出始终为 4 位数字；同一密钥下加密/解密一一对应、无碰撞。适合做格式保持映射/脱敏（空间仅1万，别用于强加密）。</p>
-
-    <label for="key">密钥</label>
-    <div class="row">
-      <input id="key" type="text" value="ht1416" placeholder="例如：ht1416 或更长随机密钥">
-      <div class="btns">
-        <button class="sec" id="randKey">随机密钥</button>
-        <button class="sec" id="copyKey">复制密钥</button>
-      </div>
+    <h1>4位数字加密/解密</h1>
+    <div class="keyBox">
+      <label for="key">密钥</label>
+      <input id="key" type="text" value="ht1416">
     </div>
 
-    <label for="inp">输入（4位数字）</label>
-    <input id="inp" type="text" inputmode="numeric" maxlength="4" placeholder="如：0420">
+    <div class="block encBlock">
+      <label for="plain">原始数字</label>
+      <input id="plain" type="text" inputmode="numeric" maxlength="4" placeholder="如：0420">
+      <div class="out" id="encOut"></div>
+    </div>
 
     <div class="btns">
-      <button id="enc">加密 →</button>
-      <button id="dec">← 解密</button>
-      <button class="sec" id="swap">↔ 互换输入/输出</button>
-      <button class="sec" id="copyOut">复制输出</button>
+      <button class="btnEnc" id="encBtn">加密 →</button>
+      <button class="btnDec" id="decBtn">← 解密</button>
     </div>
 
-    <label>结果</label>
-    <div id="out" class="out"></div>
-    <p id="msg" class="small muted"></p>
+    <div class="block decBlock">
+      <label for="cipher">加密数字</label>
+      <input id="cipher" type="text" inputmode="numeric" maxlength="4" placeholder="如：7391">
+      <div class="out" id="decOut"></div>
+    </div>
+
+    <div id="msg" class="msg"></div>
   </div>
 </div>
 
 <script>
   const $ = id => document.getElementById(id);
 
-  // —— 校验 & 格式化 ——
+  // 校验
   function isFourDigits(s){ return /^\d{1,4}$/.test(s); }
   function pad4(s){ return s.toString().padStart(4,'0'); }
-  function showMsg(txt, type='info'){
-    const el = $('msg');
-    el.textContent = txt || '';
-    el.className = 'small ' + (type==='ok'?'ok':type==='error'?'err':'muted');
-  }
+  function showMsg(txt,type='info'){ $('msg').textContent=txt; }
 
-  // —— 可重复的伪随机数（以密钥为种子），LCG + 混合，保证跨运行一致性 ——
+  // 随机数生成器（密钥种子）
   function rngFromKey(key){
-    // 先把字符串转为32位种子
-    let seed = 2166136261>>>0; // FNV-1a 起点
+    let seed = 2166136261>>>0;
     for (let i=0;i<key.length;i++){
       seed ^= key.charCodeAt(i);
-      seed = Math.imul(seed, 16777619) >>> 0;
+      seed = Math.imul(seed,16777619)>>>0;
     }
-    let state = (seed ^ 0x9e3779b9) >>> 0;
-    return function(){
-      // xorshift32 混合后再 LCG
-      state ^= state << 13; state >>>= 0;
-      state ^= state >> 17; state >>>= 0;
-      state ^= state << 5;  state >>>= 0;
-      state = (Math.imul(state, 1664525) + 1013904223) >>> 0; // LCG
-      return (state >>> 0) / 2**32; // [0,1)
-    };
+    let state = seed;
+    return ()=>{state^=state<<13;state>>>=0;state^=state>>17;state>>>=0;state^=state<<5;state>>>=0;
+      state=(Math.imul(state,1664525)+1013904223)>>>0;
+      return state/2**32;}
   }
 
-  // —— 基于密钥的 Fisher–Yates 洗牌，得到 0000..9999 的置换表 ——
+  // 构建置换表
   function buildPermutation(key){
-    const rand = rngFromKey(key);
-    const arr = new Array(10000);
-    for (let i=0;i<10000;i++) arr[i] = pad4(i);
-    for (let i=arr.length-1; i>0; i--){
-      const j = Math.floor(rand() * (i+1));
-      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    const rand=rngFromKey(key);
+    const arr=new Array(10000);
+    for(let i=0;i<10000;i++) arr[i]=pad4(i);
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(rand()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
     }
-    return arr; // arr[idx] 为加密结果
+    return arr;
   }
 
-  // —— 反向表，用于解密：value -> index ——
   function invertPermutation(arr){
-    const inv = Object.create(null);
-    for (let i=0;i<arr.length;i++) inv[arr[i]] = pad4(i);
-    return inv;
+    const inv={};for(let i=0;i<arr.length;i++) inv[arr[i]]=pad4(i);return inv;
   }
 
-  // 缓存，避免每次都重建
-  let cache = { key:null, perm:null, inv:null };
+  let cache={key:null,perm:null,inv:null};
   function ensureTables(key){
-    if (cache.key !== key){
-      const perm = buildPermutation(key);
-      cache = { key, perm, inv: invertPermutation(perm) };
+    if(cache.key!==key){
+      const perm=buildPermutation(key);
+      cache={key,perm,inv:invertPermutation(perm)};
     }
     return cache;
   }
 
-  function encrypt(num, key){
-    if (!isFourDigits(num)) throw new Error('请输入1~4位数字');
-    const { perm } = ensureTables(key);
+  function encrypt(num,key){
+    if(!isFourDigits(num)) throw new Error('请输入1~4位数字');
+    const {perm}=ensureTables(key);
     return perm[parseInt(num,10)];
   }
-
-  function decrypt(num, key){
-    if (!isFourDigits(num)) throw new Error('请输入1~4位数字');
-    const { inv } = ensureTables(key);
-    const res = inv[pad4(num)];
-    if (res == null) throw new Error('该密钥下不存在对应映射');
+  function decrypt(num,key){
+    if(!isFourDigits(num)) throw new Error('请输入1~4位数字');
+    const {inv}=ensureTables(key);
+    const res=inv[pad4(num)];
+    if(res==null) throw new Error('无对应映射');
     return res;
   }
 
-  // —— UI 事件 ——
-  $('enc').addEventListener('click', () => {
+  $('encBtn').addEventListener('click',()=>{
     try{
-      const key = $('key').value;
-      const v = $('inp').value.trim();
-      const out = encrypt(v, key);
-      $('out').textContent = out;
-      showMsg(`加密成功：${pad4(v)} → ${out}`,'ok');
-    }catch(e){ showMsg(e.message || String(e),'error'); }
+      const key=$('key').value;
+      const v=$('plain').value.trim();
+      const out=encrypt(v,key);
+      $('encOut').textContent=out;
+      $('cipher').value=out;
+      showMsg(`加密成功：${pad4(v)} → ${out}`);
+    }catch(e){showMsg(e.message);}
   });
 
-  $('dec').addEventListener('click', () => {
+  $('decBtn').addEventListener('click',()=>{
     try{
-      const key = $('key').value;
-      const v = $('inp').value.trim();
-      const out = decrypt(v, key);
-      $('out').textContent = out;
-      showMsg(`解密成功：${pad4(v)} → ${out}`,'ok');
-    }catch(e){ showMsg(e.message || String(e),'error'); }
-  });
-
-  $('swap').addEventListener('click', () => {
-    const currentOut = $('out').textContent || '';
-    if (currentOut) { $('inp').value = currentOut; $('out').textContent=''; showMsg('已将结果移回输入'); }
-  });
-
-  $('copyOut').addEventListener('click', async () => {
-    const val = $('out').textContent || '';
-    if (!val) return showMsg('当前没有可复制的结果','error');
-    try{ await navigator.clipboard.writeText(val); showMsg('已复制结果','ok'); }catch{ showMsg('复制失败','error'); }
-  });
-
-  $('randKey').addEventListener('click', () => {
-    const bytes = new Uint8Array(24);
-    crypto.getRandomValues(bytes);
-    let s = btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-    $('key').value = s;
-    cache.key = null; // 使缓存失效
-    showMsg('已生成随机密钥','ok');
-  });
-
-  $('copyKey').addEventListener('click', async () => {
-    const v = $('key').value || '';
-    if (!v) return showMsg('没有可复制的密钥','error');
-    try{ await navigator.clipboard.writeText(v); showMsg('密钥已复制','ok'); }catch{ showMsg('复制失败','error'); }
+      const key=$('key').value;
+      const v=$('cipher').value.trim();
+      const out=decrypt(v,key);
+      $('decOut').textContent=out;
+      $('plain').value=out;
+      showMsg(`解密成功：${pad4(v)} → ${out}`);
+    }catch(e){showMsg(e.message);}
   });
 </script>
 </body>
