@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>4位数字格式保持对称加密（Feistel + HMAC-SHA256）</title>
+<style>
+  :root { --fg:#222; --muted:#666; --bg:#fafafa; --card:#fff; --bd:#e5e7eb; }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+  .wrap{max-width:820px;margin:40px auto;padding:0 16px;}
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px;box-shadow:0 1px 0 rgba(0,0,0,.02);}
+  h1{font-size:20px;margin:0 0 12px;}
+  p.hint{color:var(--muted);margin:8px 0 16px;}
+  label{display:block;margin:12px 0 6px;font-weight:600;}
+  input[type="text"],input[type="number"],textarea{
+    width:100%;box-sizing:border-box;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;outline:none;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  button{
+    border:1px solid var(--bd);background:#111;color:#fff;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;
+  }
+  button.sec{background:#fff;color:#111}
+  .out{font:600 18px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px dashed var(--bd);border-radius:10px;padding:10px 12px;background:#f6f8fa}
+  .muted{color:var(--muted)}
+  .ok{color:#0a7a2f}
+  .err{color:#b00020}
+  .footer{margin-top:18px;color:var(--muted);font-size:13px}
+  .pill{display:inline-block;border:1px solid var(--bd);padding:.15rem .5rem;border-radius:999px;background:#fff;margin-left:6px;font-size:12px;color:#444}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>4位数字格式保持对称加密 <span class="pill">Feistel + HMAC-SHA256</span></h1>
+    <p class="hint">输入 <b>四位数字</b> 与 <b>密钥</b>，点击加密/解密。输出始终为四位纯数字；同一密钥可逆。</p>
+
+    <label for="key">密钥（任意文本，建议至少16字符）</label>
+    <div class="row">
+      <input id="key" type="text" placeholder="例如：my-super-secret-key-2025" value="ht1416"/>
+      <div class="btns">
+        <button class="sec" id="genKey">随机密钥</button>
+        <button class="sec" id="copyKey">复制密钥</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="rounds">轮数（6 默认，4–12 之间）</label>
+        <input id="rounds" type="number" min="4" max="12" value="6" />
+      </div>
+      <div>
+        <label for="mode" class="muted">说明</label>
+        <div class="out muted">Feistel双分支：L(前两位)/R(后两位)，F=HMAC(key, "round:R") % 100</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="plain">明文（4位数字）</label>
+        <input id="plain" type="text" inputmode="numeric" maxlength="4" placeholder="例如：0420" />
+      </div>
+      <div>
+        <label for="cipher">密文（4位数字）</label>
+        <input id="cipher" type="text" inputmode="numeric" maxlength="4" placeholder="例如：7315" />
+      </div>
+    </div>
+
+    <div class="btns">
+      <button id="encBtn">加密 →</button>
+      <button id="decBtn">← 解密</button>
+      <button class="sec" id="swapBtn">↔ 互换明文/密文</button>
+      <button class="sec" id="copyOut">复制输出</button>
+    </div>
+
+    <p id="msg" class="muted" style="margin-top:10px;"></p>
+  </div>
+
+  <div class="footer">
+    ⚠️ <b>重要提示：</b>本方案为 <b>格式保持加密</b>，空间仅 10,000 种组合，能防随手窥视/简单规则推断，但<strong>不能</strong>对抗暴力枚举。请勿用于高价值机密。<br>
+    轮函数使用浏览器 <code>Web Crypto API</code> 的 <code>HMAC-SHA256</code>；同一密钥与轮数下，加密与解密严格可逆。
+  </div>
+</div>
+
+<script>
+  // ——— 工具函数 ———
+  const $ = (id) => document.getElementById(id);
+  const enc = new TextEncoder();
+
+  function isFourDigits(s){ return typeof s === 'string' && /^\d{4}$/.test(s); }
+  function leftPad2(n){ return n.toString().padStart(2,'0'); }
+
+  function showMsg(text, type='info'){
+    const el = $('msg');
+    el.textContent = text || '';
+    el.className = type === 'error' ? 'err' : (type === 'ok' ? 'ok' : 'muted');
+  }
+
+  function getRounds(){
+    let r = parseInt($('rounds').value,10);
+    if (Number.isNaN(r) || r < 4) r = 6;
+    if (r > 12) r = 12;
+    $('rounds').value = r;
+    return r;
+  }
+
+  function getKeyBytes(){
+    const keyStr = $('key').value || '';
+    if (!keyStr) throw new Error('请先填写密钥（建议≥16字符）');
+    return enc.encode(keyStr);
+  }
+
+  function randomKey(length=24){
+    const bytes = new Uint8Array(length);
+    crypto.getRandomValues(bytes);
+    // 转为URL安全的base64
+    let s = btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    return s;
+  }
+
+  // ——— HMAC-SHA256 PRF: F = HMAC(key, `${round}:${R(两位)}`) % 100 ———
+  async function prfMod100(hmacKey, round, rVal){
+    const msg = enc.encode(`${round}:${leftPad2(rVal)}`);
+    const sig = await crypto.subtle.sign('HMAC', hmacKey, msg);
+    const view = new DataView(sig);
+    // 取前两个字节组成的无符号整数，再 mod 100
+    const v = view.getUint16(0, false);
+    return v % 100;
+  }
+
+  // ——— 初始化/导入 HMAC key ———
+  async function importHmacKey(rawBytes){
+    return crypto.subtle.importKey(
+      'raw',
+      rawBytes,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+  }
+
+  // ——— 加密（与我之前给你的伪码一致） ———
+  async function encrypt4d(plain4, keyBytes, rounds=6){
+    if (!isFourDigits(plain4)) throw new Error('明文必须是4位数字');
+    const hk = await importHmacKey(keyBytes);
+    let L = parseInt(plain4.slice(0,2),10); // 00..99
+    let R = parseInt(plain4.slice(2,4),10); // 00..99
+    for (let rnd = 1; rnd <= rounds; rnd++){
+      const F = await prfMod100(hk, rnd, R);
+      L = (L + F) % 100;
+      // 交换
+      const tmp = L; L = R; R = tmp;
+    }
+    // 与加密流程匹配的“收尾交换”
+    const tmp = L; L = R; R = tmp;
+    return leftPad2(L) + leftPad2(R);
+  }
+
+  // ——— 解密（严格按反向过程） ———
+  async function decrypt4d(cipher4, keyBytes, rounds=6){
+    if (!isFourDigits(cipher4)) throw new Error('密文必须是4位数字');
+    const hk = await importHmacKey(keyBytes);
+    let L = parseInt(cipher4.slice(0,2),10);
+    let R = parseInt(cipher4.slice(2,4),10);
+    // 与加密末尾一致：先交换一次
+    { const t = L; L = R; R = t; }
+    for (let rnd = rounds; rnd >= 1; rnd--){
+      // 反向交换
+      { const t = L; L = R; R = t; }
+      const F = await prfMod100(hk, rnd, R);
+      L = (L - F + 100) % 100;
+    }
+    return leftPad2(L) + leftPad2(R);
+  }
+
+  // ——— 事件绑定 ———
+  $('genKey').addEventListener('click', () => {
+    $('key').value = randomKey(24);
+    showMsg('已生成随机密钥。', 'ok');
+  });
+
+  $('copyKey').addEventListener('click', async () => {
+    const v = $('key').value || '';
+    if (!v) return showMsg('没有可复制的密钥。','error');
+    await navigator.clipboard.writeText(v);
+    showMsg('密钥已复制。','ok');
+  });
+
+  $('encBtn').addEventListener('click', async () => {
+    try{
+      const P = $('plain').value.trim();
+      const rounds = getRounds();
+      const keyBytes = getKeyBytes();
+      const C = await encrypt4d(P, keyBytes, rounds);
+      $('cipher').value = C;
+      showMsg(`加密成功：${P} → ${C}`, 'ok');
+    }catch(err){ showMsg(err.message || String(err), 'error'); }
+  });
+
+  $('decBtn').addEventListener('click', async () => {
+    try{
+      const C = $('cipher').value.trim();
+      const rounds = getRounds();
+      const keyBytes = getKeyBytes();
+      const P = await decrypt4d(C, keyBytes, rounds);
+      $('plain').value = P;
+      showMsg(`解密成功：${C} → ${P}`, 'ok');
+    }catch(err){ showMsg(err.message || String(err), 'error'); }
+  });
+
+  $('swapBtn').addEventListener('click', () => {
+    const a = $('plain').value; const b = $('cipher').value;
+    $('plain').value = b; $('cipher').value = a;
+    showMsg('已互换明文/密文输入。');
+  });
+
+  $('copyOut').addEventListener('click', async () => {
+    const out = $('cipher').value || $('plain').value || '';
+    if (!out) return showMsg('当前没有可复制的输出。','error');
+    await navigator.clipboard.writeText(out);
+    showMsg('已复制输出。','ok');
+  });
+</script>
+</body>
+</html>
