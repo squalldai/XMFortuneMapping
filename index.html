@@ -23,33 +23,34 @@ h2 { text-align:center;color:#1976d2;margin-bottom:10px;font-weight:700; }
 label { font-weight:500;margin-bottom:6px;display:block; text-align:left; width:100%; }
 
 /* 输入输出行 */
-.input-row, .result-row { display:flex; align-items:center; gap:8px; width:100%; }
+.input-row, .result-row { display:flex; align-items:center; gap:8px; width:100%; max-width:360px; }
 .static-text { font-weight:600; color:#555; min-width:80px; text-align:right; }
 .dynamic-prefix { font-weight:700; min-width:70px; text-align:right; transition: all 0.3s; display:inline-block; }
 /* 动态前缀样式 */
-.dynamic-encrypt { font-size:1.4em; color:#1976d2; }
-.dynamic-decrypt { font-size:1.4em; color:#f57c00; }
+.dynamic-encrypt { font-size:1.3em; color:#1976d2; }
+.dynamic-decrypt { font-size:1.3em; color:#f57c00; }
 
 /* 输入输出框 */
 input[type="tel"], input[type="text"] {
-    flex-grow:1; font-size:1.3em; padding:10px; border-radius:12px; border:1px solid #ccc;
+    flex-grow:1; font-size:1.2em; padding:8px; border-radius:10px; border:1px solid #ccc;
     text-align:center; letter-spacing:3px; box-sizing:border-box;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
+    max-width:160px;  /* 限制输入框宽度 */
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
     transition: border 0.3s, box-shadow 0.3s;
 }
-input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,118,210,0.2) inset; }
+input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 8px rgba(25,118,210,0.2) inset; }
 
 /* 按钮 */
-.buttons { display:flex; gap:12px; width:100%; }
-.btn { flex:1; padding:12px; border-radius:14px; border:none; color:#fff; font-size:1.05em; cursor:pointer;
+.buttons { display:flex; gap:12px; width:100%; max-width:360px; }
+.btn { flex:1; padding:10px; border-radius:12px; border:none; color:#fff; font-size:1em; cursor:pointer;
        display:flex; align-items:center; justify-content:center; gap:6px; font-weight:500; transition: all 0.2s ease; }
-.btn:hover { transform: translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.18); }
-#encryptBtn{background: linear-gradient(135deg,#42a5f5,#1976d2); box-shadow:0 4px 14px rgba(25,118,210,0.3);}
-#decryptBtn{background: linear-gradient(135deg,#ffb74d,#f57c00); box-shadow:0 4px 14px rgba(255,152,0,0.3);}
+.btn:hover { transform: translateY(-2px); box-shadow:0 3px 10px rgba(0,0,0,0.15); }
+#encryptBtn{background: linear-gradient(135deg,#42a5f5,#1976d2); box-shadow:0 3px 10px rgba(25,118,210,0.25);}
+#decryptBtn{background: linear-gradient(135deg,#ffb74d,#f57c00); box-shadow:0 3px 10px rgba(255,152,0,0.25);}
 
 /* 模式指示 */
-.mode-indicator { text-align:center;padding:8px;font-weight:600;margin-bottom:12px;border-radius:12px;
-                  font-size:1em; box-shadow: inset 0 0 0 rgba(0,0,0,0); transition: background 0.6s, color 0.6s; }
+.mode-indicator { text-align:center;padding:6px;font-weight:600;margin-bottom:12px;border-radius:12px;
+                  font-size:0.95em; box-shadow: inset 0 0 0 rgba(0,0,0,0); transition: background 0.6s, color 0.6s; }
 .mode-encrypt{background:#eaf6ff;color:#0b57a8;}
 .mode-decrypt{background:#fff7ea;color:#9f5600;}
 
@@ -100,7 +101,7 @@ const outputDynamic = document.getElementById('outputDynamic');
 const modeIndicator = document.getElementById('modeIndicator');
 const operationPanel = document.getElementById('operationPanel');
 
-// 模拟加解密，可替换为密钥驱动置换算法
+// 模拟加解密
 function encrypt(num){ return (parseInt(num)+1234).toString().padStart(4,'0').slice(-4); }
 function decrypt(num){ return (parseInt(num)-1234+10000).toString().padStart(4,'0').slice(-4); }
 
