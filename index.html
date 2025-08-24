@@ -8,85 +8,96 @@
     body {
       margin: 0;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f6f9;
+      background: linear-gradient(135deg, #fdfbfb, #ebedee);
       color: #333;
       text-align: center;
     }
     header {
       width: 100%;
       height: 120px;
-      background: #222;
+      background: linear-gradient(90deg, #ffb74d, #ff7043);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-    }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     header h1 {
       position: relative;
       color: white;
-      font-size: 22px;
+      font-size: 26px;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
       z-index: 1;
     }
     .container {
       margin: 20px auto;
-      max-width: 400px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 420px;
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(12px);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     }
     .section {
-      margin: 15px 0;
+      margin: 18px 0;
     }
     label {
       font-weight: bold;
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      font-size: 15px;
+      color: #444;
     }
     .input-row, .output-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .prefix {
       font-size: 18px;
       font-weight: bold;
-      margin-right: 6px;
-      min-width: 70px;
+      margin-right: 8px;
+      min-width: 75px;
       text-align: right;
+      color: #ff7043;
     }
     input {
-      width: 130px;
-      padding: 8px;
+      width: 140px;
+      padding: 10px;
       font-size: 16px;
       text-align: center;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      background: rgba(255,255,255,0.8);
+      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.1),
+                  inset -2px -2px 6px rgba(255,255,255,0.8);
     }
     button {
-      padding: 8px 14px;
-      margin: 6px;
+      padding: 10px 18px;
+      margin: 8px;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: background 0.3s;
+      font-weight: bold;
+      transition: all 0.3s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
-    button.encrypt { background: #4CAF50; color: white; }
-    button.decrypt { background: #2196F3; color: white; }
-    button.encrypt:hover { background: #45a049; }
-    button.decrypt:hover { background: #1976d2; }
+    button.encrypt {
+      background: linear-gradient(145deg,#66bb6a,#43a047);
+      color: white;
+    }
+    button.decrypt {
+      background: linear-gradient(145deg,#42a5f5,#1e88e5);
+      color: white;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+    }
     .highlight {
       animation: flash 1s;
     }
@@ -98,12 +109,13 @@
       margin-top: 20px;
       text-align: left;
       font-size: 14px;
-      background: #fafafa;
+      background: linear-gradient(145deg,#fafafa,#f0f0f0);
       border: 1px solid #ddd;
-      padding: 10px;
-      border-radius: 8px;
-      max-height: 180px;
+      padding: 12px;
+      border-radius: 12px;
+      max-height: 200px;
       overflow-y: auto;
+      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.05);
     }
     .mode-options {
       margin-bottom: 15px;
@@ -116,7 +128,6 @@
 </head>
 <body>
   <header>
-    <canvas id="pixelHeader"></canvas>
     <h1>数字加密解密工具</h1>
   </header>
 
@@ -138,12 +149,8 @@
     </div>
 
     <div class="section">
-      <button class="encrypt" onclick="handleEncrypt()">
-        🔒 加密
-      </button>
-      <button class="decrypt" onclick="handleDecrypt()">
-        🔓 解密
-      </button>
+      <button class="encrypt" onclick="handleEncrypt()">🔒 加密</button>
+      <button class="decrypt" onclick="handleDecrypt()">🔓 解密</button>
     </div>
 
     <div class="section">
@@ -158,67 +165,6 @@
   </div>
 
   <script>
-    // ===== 生成像素画横幅 =====
-    const canvas = document.getElementById("pixelHeader");
-    const ctx = canvas.getContext("2d");
-
-    function resizeCanvas() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      drawPixelArt();
-    }
-
-    function drawPixelArt() {
-      const w = canvas.width;
-      const h = canvas.height;
-      const pixel = 2; // 像素点大小
-      ctx.clearRect(0,0,w,h);
-
-      // 背景
-      ctx.fillStyle = "#ffe0b2";
-      ctx.fillRect(0,0,w,h);
-
-      // 随机糖果点缀
-      for (let i=0;i<120;i++) {
-        const x = Math.random()*w;
-        const y = Math.random()*h;
-        ctx.fillStyle = ["#f48fb1","#ce93d8","#81d4fa","#aed581"][Math.floor(Math.random()*4)];
-        ctx.fillRect(x, y, pixel, pixel);
-      }
-
-      // 饮料杯
-      ctx.fillStyle="#42a5f5";
-      ctx.fillRect(40, h-50, 20, 40);
-      ctx.fillStyle="#1976d2";
-      ctx.fillRect(45, h-45, 10, 30);
-      ctx.fillStyle="#fff";
-      ctx.fillRect(48,h-60,4,10);
-
-      // 蛋糕
-      ctx.fillStyle="#ffcc80";
-      ctx.fillRect(100,h-40,50,20);
-      ctx.fillStyle="#ffb74d";
-      ctx.fillRect(100,h-60,50,20);
-      ctx.fillStyle="#d32f2f";
-      ctx.fillRect(100,h-60,50,5);
-
-      // 面包
-      ctx.fillStyle="#8d6e63";
-      ctx.fillRect(180,h-30,60,15);
-      ctx.fillStyle="#a1887f";
-      ctx.fillRect(180,h-45,60,15);
-
-      // 饼干
-      ctx.fillStyle="#fbc02d";
-      ctx.fillRect(270,h-30,20,20);
-      ctx.fillStyle="#6d4c41";
-      for(let i=0;i<5;i++){
-        ctx.fillRect(272+Math.random()*12, h-28+Math.random()*12, 2,2);
-      }
-    }
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
-
     // ===== 加密解密算法（密钥驱动洗牌双射） =====
     const key = "ht1416";
 
