@@ -24,7 +24,11 @@ label { font-weight:500;margin-bottom:6px;display:block; text-align:left; width:
 
 /* 输入输出行 */
 .input-row, .result-row { display:flex; align-items:center; gap:8px; width:100%; }
-.prefix, .prefix-out { min-width:90px; text-align:right; font-weight:600; color:#555; }
+.prefix, .prefix-out { min-width:90px; text-align:right; font-weight:600; color:#555; font-size:1em; transition: font-size 0.3s; }
+
+/* 点击按钮后动态前缀字体加大 */
+.prefix-large { font-size:1.4em; font-weight:700; color:#1976d2; }
+.prefix-large-decrypt { font-size:1.4em; font-weight:700; color:#f57c00; }
 
 /* 输入输出框 */
 input[type="tel"], input[type="text"] {
@@ -110,6 +114,10 @@ document.getElementById('encryptBtn').addEventListener('click', ()=>{
   output.value = encrypt(val);
   inputPrefix.textContent = "800880";
   outputPrefix.textContent = "HT-";
+  inputPrefix.classList.add("prefix-large");
+  outputPrefix.classList.add("prefix-large");
+  inputPrefix.classList.remove("prefix-large-decrypt");
+  outputPrefix.classList.remove("prefix-large-decrypt");
   modeIndicator.textContent = "当前模式：加密";
   modeIndicator.className = "mode-indicator mode-encrypt";
   highlight("encrypt");
@@ -121,6 +129,10 @@ document.getElementById('decryptBtn').addEventListener('click', ()=>{
   output.value = decrypt(val);
   inputPrefix.textContent = "HT-";
   outputPrefix.textContent = "800880";
+  inputPrefix.classList.add("prefix-large-decrypt");
+  outputPrefix.classList.add("prefix-large-decrypt");
+  inputPrefix.classList.remove("prefix-large");
+  outputPrefix.classList.remove("prefix-large");
   modeIndicator.textContent = "当前模式：解密";
   modeIndicator.className = "mode-indicator mode-decrypt";
   highlight("decrypt");
