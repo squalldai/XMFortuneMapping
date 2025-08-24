@@ -12,19 +12,18 @@
   .card { background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;
           box-shadow:0 2px 6px rgba(0,0,0,0.08);transition:background-color .6s ease; }
   label { font-weight:600;margin-bottom:6px;display:block; }
-  .input-row { display:flex; align-items:center; margin-bottom:8px; transition: background-color 0.6s; }
-  .prefix { min-width:60px; text-align:right; margin-right:6px; font-weight:600; color:#555; }
+  .input-row, .result-row { display:flex; align-items:center; margin-bottom:8px; transition: background-color 0.6s; }
+  .prefix, .prefix-out { min-width:60px; text-align:right; margin-right:6px; font-weight:600; color:#555; }
   input[type="tel"], input[type="text"] {
-    width:80px; font-size:1.3em; padding:8px; border:1px solid #ccc; border-radius:8px;
+    font-size:1.3em; padding:8px; border:1px solid #ccc; border-radius:8px;
     text-align:center; letter-spacing:3px; box-sizing:border-box;
   }
+  #inputNum { width:120px; }  /* 输入框宽一些 */
+  #outputNum { width:100px; background:#f6f6f6; pointer-events:none; }  /* 输出框窄一些 */
   input:focus{outline:none;border-color:#1976d2;}
   .buttons { display:flex; gap:10px; margin:10px 0; transition: background-color 0.6s; }
-  .btn { flex:1;padding:10px;border-radius:8px;border:none;color:#fff;font-size:1.02em;cursor:pointer; }
+  .btn { flex:1;padding:10px;border-radius:8px;border:none;color:#fff;font-size:1.02em;cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
   #encryptBtn{background:#1976d2;} #decryptBtn{background:#ff9800;}
-  .result-row { display:flex; align-items:center; gap:8px; transition: background-color 0.6s; }
-  .result-row input { flex:1; background:#f6f6f6; pointer-events:none; width:80px; }
-  .prefix-out { min-width:60px; text-align:right; font-weight:600; color:#555; }
   .mode-indicator { text-align:center;padding:6px;font-weight:600;margin-bottom:8px;border-radius:8px; }
   .mode-encrypt{background:#eaf6ff;color:#0b57a8;}
   .mode-decrypt{background:#fff7ea;color:#9f5600;}
@@ -61,8 +60,8 @@
     </div>
 
     <div id="buttonArea" class="buttons">
-      <button id="encryptBtn" class="btn">加密</button>
-      <button id="decryptBtn" class="btn">解密</button>
+      <button id="encryptBtn" class="btn">🔒 加密</button>
+      <button id="decryptBtn" class="btn">🔓 解密</button>
     </div>
 
     <label>结果</label>
@@ -82,7 +81,7 @@
   const buttonArea = document.getElementById('buttonArea');
   const outputArea = document.getElementById('outputArea');
 
-  // 模拟加解密（替换成你的置换算法）
+  // 模拟加解密（替换成密钥驱动置换算法）
   function encrypt(num){ return (parseInt(num)+1234).toString().padStart(4,'0').slice(-4); }
   function decrypt(num){ return (parseInt(num)-1234+10000).toString().padStart(4,'0').slice(-4); }
 
@@ -90,7 +89,7 @@
     if(mode==="encrypt"){
       [inputArea, buttonArea, outputArea].forEach(el=>{
         el.classList.remove("flash-decrypt");
-        void el.offsetWidth; // 强制重绘
+        void el.offsetWidth;
         el.classList.add("flash-encrypt");
       });
     }else{
