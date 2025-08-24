@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 body { font-family: 'Roboto', sans-serif; margin:0;padding:20px;background:#f0f2f5; color:#333; }
-canvas#logoCanvas { display:block; margin:0 auto 10px auto; width:100%; max-width:360px; height:60px; } 
+canvas#logoCanvas { display:block; margin:0 auto 10px auto; width:100%; max-width:360px; height:80px; } 
 h2 { text-align:center;color:#1976d2;margin-bottom:10px;font-weight:700; }
 .description { text-align:center;color:#555;font-size:0.95em;margin-bottom:20px; line-height:1.5; }
 .card { background: rgba(255,255,255,0.9); backdrop-filter: blur(6px); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow: 0 6px 25px rgba(0,0,0,0.08); }
@@ -40,7 +40,7 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 6.8px rgba(25,1
 </head>
 <body>
 
-<!-- 像素风 logo -->
+<!-- 像素风食品主题 logo -->
 <canvas id="logoCanvas"></canvas>
 
 <h2>🔐 四位数字加密解密</h2>
@@ -76,33 +76,42 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 6.8px rgba(25,1
 </div>
 
 <script>
-// ---------- 像素风 logo ----------
+// ---------- 食品主题像素风 logo ----------
 const canvas = document.getElementById('logoCanvas');
 const ctx = canvas.getContext('2d');
-function drawPixelLogo(){
+
+function drawFoodLogo(){
     const w = canvas.width = canvas.clientWidth;
     const h = canvas.height = canvas.clientHeight;
-    const size = Math.min(w,h)/8; // 像素大小
-    const colors = ["#1976d2","#42a5f5","#f57c00","#ffb74d"];
-    // 简单像素图案示例
-    const pattern = [
-        [1,0,0,1,0,0,1,0],
-        [0,1,1,0,1,1,0,1],
-        [1,0,0,1,0,0,1,0],
-        [0,1,1,0,1,1,0,1],
-        [1,0,0,1,0,0,1,0],
-        [0,1,1,0,1,1,0,1],
-        [1,0,0,1,0,0,1,0],
-        [0,1,1,0,1,1,0,1],
-    ];
-    for(let y=0;y<pattern.length;y++){
-        for(let x=0;x<pattern[y].length;x++){
-            ctx.fillStyle = colors[pattern[y][x]%colors.length];
-            ctx.fillRect(x*size,y*size,size,size);
-        }
-    }
+    const pixel = Math.floor(h/8);
+
+    // 背景
+    ctx.fillStyle="#f0f2f5";
+    ctx.fillRect(0,0,w,h);
+
+    // 饮料
+    ctx.fillStyle="#42a5f5";
+    ctx.fillRect(pixel, pixel*2, pixel*2, pixel*4);
+    ctx.fillStyle="#1976d2";
+    ctx.fillRect(pixel*2, pixel, pixel, pixel); // 吸管
+
+    // 烘焙品（蛋糕）
+    ctx.fillStyle="#ffb74d";
+    ctx.fillRect(pixel*4, pixel*3, pixel*3, pixel*2);
+    ctx.fillStyle="#f57c00";
+    ctx.fillRect(pixel*4, pixel*2, pixel*3, pixel); // 糖霜
+
+    // 糖果
+    ctx.fillStyle="#f48fb1";
+    ctx.fillRect(pixel*2, pixel*6, pixel, pixel);
+    ctx.fillStyle="#ce93d8";
+    ctx.fillRect(pixel*3, pixel*6, pixel, pixel);
+
+    // 简单装饰
+    ctx.fillStyle="#fff";
+    ctx.fillRect(pixel*5, pixel*5, pixel, pixel);
 }
-drawPixelLogo();
+drawFoodLogo();
 
 // ---------- 密钥驱动伪随机双射逻辑 ----------
 const KEY = "ht1416";
