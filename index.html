@@ -3,50 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>四位数字双射加密工具</title>
+<title>四位数字加密解密</title>
 <style>
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f7f9fc; color: #333; }
-h2 { text-align: center; color: #1976d2; }
-label { font-weight: bold; margin-top: 10px; display: block; }
-input { width: 100%; font-size: 1.2em; padding: 12px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-button { width: 48%; font-size: 1.2em; padding: 12px; margin: 5px 1%; border: none; border-radius: 6px; cursor: pointer; color: white; transition: background 0.3s; }
-#encryptBtn { background-color: #1976d2; } #encryptBtn:hover { background-color: #1565c0; }
-#decryptBtn { background-color: #ff9800; } #decryptBtn:hover { background-color: #fb8c00; }
-#encryptInput { background-color: #e3f2fd; }
-#decryptInput { background-color: #fff3e0; }
-#history { margin-top: 20px; background: #ffffff; padding: 15px; border-radius: 8px; max-height: 250px; overflow-y: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-.record { padding: 6px; border-bottom: 1px solid #eee; font-family: monospace; }
-@media (max-width: 400px){ button { width: 100%; margin: 5px 0; } }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 15px;
+    background: #f5f7fa; color: #333;
+}
+h2 { text-align: center; color: #1976d2; margin-bottom: 20px; }
+
+.card {
+    background: #fff; border-radius: 12px;
+    padding: 15px; margin-bottom: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+label { font-weight: 600; display: block; margin-bottom: 5px; }
+input {
+    width: 100%; font-size: 1.3em; padding: 10px;
+    margin-bottom: 6px; border: 1px solid #ccc; border-radius: 6px;
+    text-align: center; letter-spacing: 3px;
+}
+input:focus { outline: none; border-color: #1976d2; }
+input.error { border-color: #e53935; background: #ffebee; }
+.helper { font-size: 0.9em; color: #999; margin-bottom: 8px; }
+.helper.error { color: #e53935; }
+
+button {
+    font-size: 1.05em; padding: 10px 14px;
+    border: none; border-radius: 6px; cursor: pointer;
+    color: white; transition: background 0.2s;
+}
+#encryptBtn { background-color: #1976d2; }
+#encryptBtn:active { background-color: #1565c0; }
+#decryptBtn { background-color: #ff9800; }
+#decryptBtn:active { background-color: #fb8c00; }
+
+.buttons { display: flex; justify-content: space-between; margin: 10px 0; }
+
+.result-container { display: flex; align-items: center; gap: 8px; }
+.result-container input { flex: 1; }
+.copy-btn {
+    background: #4caf50; min-width: 50px;
+}
+.copy-btn:active { background: #43a047; }
+
+#history { margin-top: 10px; max-height: 220px; overflow-y: auto; }
+.record {
+    padding: 6px 8px; border-bottom: 1px solid #eee;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: monospace; cursor: pointer;
+}
+.record span.tag {
+    padding: 2px 6px; border-radius: 4px; font-size: 0.8em; color: #fff;
+    margin-right: 10px;
+}
+.record .encrypt { background: #1976d2; }
+.record .decrypt { background: #ff9800; }
+.record:hover { background: #f9f9f9; }
+
+#copyMsg {
+    font-size: 0.85em; color: #4caf50;
+    margin-left: 4px; visibility: hidden;
+}
 </style>
 </head>
 <body>
 
-<h2>四位数字双射加密工具</h2>
+<h2>🔐 四位数字加密解密</h2>
 
-<label>密钥（默认 ht1416）：</label>
-<input type="text" id="keyInput" maxlength="20" placeholder="输入密钥或留空使用默认">
-
-<label>原始四位数字：</label>
-<input type="text" id="encryptInput" maxlength="4" placeholder="输入四位数字">
-
-<label>加密结果 / 密文：</label>
-<input type="text" id="decryptInput" maxlength="4" placeholder="解密结果显示">
-
-<div style="text-align:center;">
-    <button id="encryptBtn">加密 →</button>
-    <button id="decryptBtn">解密 ←</button>
+<div class="card">
+    <label>请输入四位数字：</label>
+    <input type="tel" id="encryptInput" maxlength="4" placeholder="例如：1234" inputmode="numeric">
+    <div id="inputHelper" class="helper">仅支持 0-9 的四位数字</div>
 </div>
 
-<div id="history">
-    <strong>操作记录：</strong>
+<div class="card">
+    <div class="buttons">
+        <button id="decryptBtn">🔓 解密</button>
+        <button id="encryptBtn">🔒 加密</button>
+    </div>
+    <label>结果：</label>
+    <div class="result-container">
+        <input type="text" id="decryptInput" readonly placeholder="结果将显示在这里">
+        <button class="copy-btn" id="copyBtn">📋</button>
+        <span id="copyMsg">已复制</span>
+    </div>
+</div>
+
+<div class="card">
+    <strong>📜 操作记录：</strong>
+    <div id="history"></div>
 </div>
 
 <script>
 let defaultKey = 'ht1416';
-let mapping = [];
-let reverseMapping = [];
+let mapping = [], reverseMapping = [];
 
-// 可控随机数生成器
 function seededRandom(seed) {
     return function() {
         seed = (seed * 9301 + 49297) % 233280;
@@ -54,7 +106,6 @@ function seededRandom(seed) {
     };
 }
 
-// 生成10000个数字的置换表
 function generatePermutation10000(key) {
     let arr = [];
     for(let i=0;i<10000;i++) arr.push(i);
@@ -68,43 +119,72 @@ function generatePermutation10000(key) {
     return arr;
 }
 
-// 初始化映射表
 function initMapping() {
-    let key = document.getElementById('keyInput').value.trim() || defaultKey;
-    mapping = generatePermutation10000(key);
+    mapping = generatePermutation10000(defaultKey);
     reverseMapping = [];
-    for(let i=0;i<10000;i++){
-        reverseMapping[mapping[i]] = i;
+    for(let i=0;i<10000;i++) reverseMapping[mapping[i]] = i;
+}
+
+function normalizeInput(num) {
+    return num.padStart(4,'0');
+}
+
+function validateInput(value) {
+    const helper = document.getElementById("inputHelper");
+    const inputBox = document.getElementById("encryptInput");
+    if (!/^\d{1,4}$/.test(value)) {
+        inputBox.classList.add("error");
+        helper.textContent = "❌ 请输入 0-9 的四位数字";
+        helper.classList.add("error");
+        return false;
+    } else {
+        inputBox.classList.remove("error");
+        helper.textContent = "✔ 可以进行加密或解密";
+        helper.classList.remove("error");
+        return true;
     }
 }
 
-// 加解密函数
 function encryptNumber(num) {
     let n = parseInt(num,10);
     if(n<0||n>9999) return '';
     return mapping[n].toString().padStart(4,'0');
 }
-
 function decryptNumber(num) {
     let n = parseInt(num,10);
     if(n<0||n>9999) return '';
     return reverseMapping[n].toString().padStart(4,'0');
 }
 
-// 历史记录
 function addHistory(action,input,output){
     const historyDiv = document.getElementById('history');
     const record = document.createElement('div');
     record.className='record';
-    record.textContent=`${action}: ${input} → ${output}`;
+    const tag = document.createElement('span');
+    tag.className = 'tag ' + (action==="加密"?"encrypt":"decrypt");
+    tag.textContent = action;
+    record.appendChild(tag);
+    const text = document.createElement('span');
+    text.textContent = `${input} → ${output}`;
+    record.appendChild(text);
+    record.addEventListener('click',()=>{
+        document.getElementById('encryptInput').value=input;
+        document.getElementById('decryptInput').value=output;
+    });
     historyDiv.prepend(record);
 }
 
 // 事件绑定
+document.getElementById('encryptInput').addEventListener('input', (e)=>{
+    e.target.value = e.target.value.replace(/\D/g,''); // 只保留数字
+    validateInput(e.target.value);
+});
+
 document.getElementById('encryptBtn').addEventListener('click',()=>{
     initMapping();
-    const input=document.getElementById('encryptInput').value;
-    if(!/^\d{4}$/.test(input)){ alert('请输入四位数字'); return; }
+    let input=document.getElementById('encryptInput').value;
+    if(!validateInput(input)) return;
+    input = normalizeInput(input);
     const encrypted=encryptNumber(input);
     document.getElementById('decryptInput').value=encrypted;
     addHistory('加密',input,encrypted);
@@ -112,11 +192,24 @@ document.getElementById('encryptBtn').addEventListener('click',()=>{
 
 document.getElementById('decryptBtn').addEventListener('click',()=>{
     initMapping();
-    const input=document.getElementById('decryptInput').value;
-    if(!/^\d{4}$/.test(input)){ alert('请输入四位数字'); return; }
+    let input=document.getElementById('encryptInput').value;
+    if(!validateInput(input)) return;
+    input = normalizeInput(input);
     const decrypted=decryptNumber(input);
-    document.getElementById('encryptInput').value=decrypted;
+    document.getElementById('decryptInput').value=decrypted;
     addHistory('解密',input,decrypted);
+});
+
+// 复制功能
+document.getElementById('copyBtn').addEventListener('click',()=>{
+    const result = document.getElementById('decryptInput').value;
+    if(result){
+        navigator.clipboard.writeText(result).then(()=>{
+            const msg = document.getElementById('copyMsg');
+            msg.style.visibility = "visible";
+            setTimeout(()=> msg.style.visibility = "hidden", 1500);
+        });
+    }
 });
 </script>
 
