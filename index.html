@@ -20,6 +20,7 @@ h2 { text-align: center; color: #1976d2; margin-bottom: 8px; }
     background: #fff; border-radius: 12px;
     padding: 15px; margin-bottom: 15px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: background-color 0.6s ease;
 }
 label { font-weight: 600; display: block; margin-bottom: 5px; }
 input {
@@ -29,6 +30,7 @@ input {
 }
 input:focus { outline: none; border-color: #1976d2; }
 input.error { border-color: #e53935; background: #ffebee; }
+
 .helper { font-size: 0.9em; color: #999; margin-bottom: 8px; }
 .helper.error { color: #e53935; }
 
@@ -70,25 +72,32 @@ button {
     margin-left: 4px; visibility: hidden;
 }
 
-/* 🔹 高亮动画效果 */
+/* 🔹 高亮动画 */
 @keyframes highlightBlue {
     0% { background-color: #fff; }
-    25% { background-color: #e3f2fd; }
-    75% { background-color: #e3f2fd; }
-    100% { background-color: #fff; }
+    30% { background-color: #bbdefb; }
+    100% { background-color: #e3f2fd; }
 }
 @keyframes highlightOrange {
     0% { background-color: #fff; }
-    25% { background-color: #fff3e0; }
-    75% { background-color: #fff3e0; }
-    100% { background-color: #fff; }
+    30% { background-color: #ffe0b2; }
+    100% { background-color: #fff3e0; }
 }
-.animate-encrypt {
-    animation: highlightBlue 1.2s ease;
+.encrypt-mode { background-color: #e3f2fd !important; }
+.decrypt-mode { background-color: #fff3e0 !important; }
+.animate-encrypt { animation: highlightBlue 0.8s ease; }
+.animate-decrypt { animation: highlightOrange 0.8s ease; }
+
+/* 🔹 输入错误时抖动效果 */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+    100% { transform: translateX(0); }
 }
-.animate-decrypt {
-    animation: highlightOrange 1.2s ease;
-}
+.shake { animation: shake 0.4s; }
 </style>
 </head>
 <body>
@@ -133,7 +142,6 @@ function seededRandom(seed) {
         return seed / 233280;
     };
 }
-
 function generatePermutation10000(key) {
     let arr = [];
     for(let i=0;i<10000;i++) arr.push(i);
@@ -146,16 +154,12 @@ function generatePermutation10000(key) {
     }
     return arr;
 }
-
 function initMapping() {
     mapping = generatePermutation10000(defaultKey);
     reverseMapping = [];
     for(let i=0;i<10000;i++) reverseMapping[mapping[i]] = i;
 }
-
-function normalizeInput(num) {
-    return num.padStart(4,'0');
-}
+function normalizeInput(num) { return num.padStart(4,'0'); }
 
 function validateInput(value) {
     const helper = document.getElementById("inputHelper");
@@ -164,6 +168,11 @@ function validateInput(value) {
         inputBox.classList.add("error");
         helper.textContent = "❌ 请输入 0-9 的四位数字";
         helper.classList.add("error");
+
+        // 🔹 抖动提示
+        inputBox.classList.add("shake");
+        setTimeout(()=> inputBox.classList.remove("shake"), 500);
+
         return false;
     } else {
         inputBox.classList.remove("error");
@@ -172,7 +181,6 @@ function validateInput(value) {
         return true;
     }
 }
-
 function encryptNumber(num) {
     let n = parseInt(num,10);
     if(n<0||n>9999) return '';
@@ -183,7 +191,6 @@ function decryptNumber(num) {
     if(n<0||n>9999) return '';
     return reverseMapping[n].toString().padStart(4,'0');
 }
-
 function addHistory(action,input,output){
     const historyDiv = document.getElementById('history');
     const record = document.createElement('div');
@@ -202,30 +209,35 @@ function addHistory(action,input,output){
     historyDiv.prepend(record);
 }
 
-// 🔹 带动画的高亮操作
+// 🔹 动画高亮 & 模式保持
 function highlightAction(type) {
     const inputCard = document.getElementById('inputCard');
     const actionCard = document.getElementById('actionCard');
     const resultContainer = document.getElementById('resultContainer');
 
     [inputCard, actionCard, resultContainer].forEach(el=>{
-        el.classList.remove("animate-encrypt","animate-decrypt");
-        void el.offsetWidth; // 触发重绘，确保动画可重复执行
+        el.classList.remove("animate-encrypt","animate-decrypt","encrypt-mode","decrypt-mode");
+        void el.offsetWidth; // 重绘
     });
 
     if(type === "encrypt"){
-        [inputCard, actionCard, resultContainer].forEach(el=> el.classList.add("animate-encrypt"));
+        [inputCard, actionCard, resultContainer].forEach(el=>{
+            el.classList.add("animate-encrypt");
+            el.classList.add("encrypt-mode");
+        });
     } else {
-        [inputCard, actionCard, resultContainer].forEach(el=> el.classList.add("animate-decrypt"));
+        [inputCard, actionCard, resultContainer].forEach(el=>{
+            el.classList.add("animate-decrypt");
+            el.classList.add("decrypt-mode");
+        });
     }
 }
 
 // 事件绑定
 document.getElementById('encryptInput').addEventListener('input', (e)=>{
-    e.target.value = e.target.value.replace(/\D/g,''); // 只保留数字
+    e.target.value = e.target.value.replace(/\D/g,''); 
     validateInput(e.target.value);
 });
-
 document.getElementById('encryptBtn').addEventListener('click',()=>{
     initMapping();
     let input=document.getElementById('encryptInput').value;
@@ -236,7 +248,6 @@ document.getElementById('encryptBtn').addEventListener('click',()=>{
     addHistory('加密',input,encrypted);
     highlightAction("encrypt");
 });
-
 document.getElementById('decryptBtn').addEventListener('click',()=>{
     initMapping();
     let input=document.getElementById('encryptInput').value;
@@ -247,8 +258,6 @@ document.getElementById('decryptBtn').addEventListener('click',()=>{
     addHistory('解密',input,decrypted);
     highlightAction("decrypt");
 });
-
-// 复制功能
 document.getElementById('copyBtn').addEventListener('click',()=>{
     const result = document.getElementById('decryptInput').value;
     if(result){
@@ -260,6 +269,5 @@ document.getElementById('copyBtn').addEventListener('click',()=>{
     }
 });
 </script>
-
 </body>
 </html>
