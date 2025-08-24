@@ -10,8 +10,12 @@ body {
     margin: 0; padding: 15px;
     background: #f5f7fa; color: #333;
 }
-h2 { text-align: center; color: #1976d2; margin-bottom: 20px; }
-
+h2 { text-align: center; color: #1976d2; margin-bottom: 8px; }
+.description {
+    text-align: center; color: #555;
+    font-size: 0.95em; margin-bottom: 20px;
+    line-height: 1.5;
+}
 .card {
     background: #fff; border-radius: 12px;
     padding: 15px; margin-bottom: 15px;
@@ -70,6 +74,10 @@ button {
 <body>
 
 <h2>🔐 四位数字加密解密</h2>
+<p class="description">
+输入任意四位数字，即可通过固定密钥 <b>ht1416</b> 加密为另一组唯一四位数。<br>
+加密结果可随时解密回原始数字，操作简便，适合数字安全传输场景。
+</p>
 
 <div class="card">
     <label>请输入四位数字：</label>
