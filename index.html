@@ -69,6 +69,26 @@ button {
     font-size: 0.85em; color: #4caf50;
     margin-left: 4px; visibility: hidden;
 }
+
+/* 🔹 高亮动画效果 */
+@keyframes highlightBlue {
+    0% { background-color: #fff; }
+    25% { background-color: #e3f2fd; }
+    75% { background-color: #e3f2fd; }
+    100% { background-color: #fff; }
+}
+@keyframes highlightOrange {
+    0% { background-color: #fff; }
+    25% { background-color: #fff3e0; }
+    75% { background-color: #fff3e0; }
+    100% { background-color: #fff; }
+}
+.animate-encrypt {
+    animation: highlightBlue 1.2s ease;
+}
+.animate-decrypt {
+    animation: highlightOrange 1.2s ease;
+}
 </style>
 </head>
 <body>
@@ -79,19 +99,19 @@ button {
 加密结果可随时解密回原始数字，操作简便，适合数字安全传输场景。
 </p>
 
-<div class="card">
+<div class="card" id="inputCard">
     <label>请输入四位数字：</label>
     <input type="tel" id="encryptInput" maxlength="4" placeholder="例如：1234" inputmode="numeric">
     <div id="inputHelper" class="helper">仅支持 0-9 的四位数字</div>
 </div>
 
-<div class="card">
+<div class="card" id="actionCard">
     <div class="buttons">
         <button id="decryptBtn">🔓 解密</button>
         <button id="encryptBtn">🔒 加密</button>
     </div>
     <label>结果：</label>
-    <div class="result-container">
+    <div class="result-container" id="resultContainer">
         <input type="text" id="decryptInput" readonly placeholder="结果将显示在这里">
         <button class="copy-btn" id="copyBtn">📋</button>
         <span id="copyMsg">已复制</span>
@@ -182,6 +202,24 @@ function addHistory(action,input,output){
     historyDiv.prepend(record);
 }
 
+// 🔹 带动画的高亮操作
+function highlightAction(type) {
+    const inputCard = document.getElementById('inputCard');
+    const actionCard = document.getElementById('actionCard');
+    const resultContainer = document.getElementById('resultContainer');
+
+    [inputCard, actionCard, resultContainer].forEach(el=>{
+        el.classList.remove("animate-encrypt","animate-decrypt");
+        void el.offsetWidth; // 触发重绘，确保动画可重复执行
+    });
+
+    if(type === "encrypt"){
+        [inputCard, actionCard, resultContainer].forEach(el=> el.classList.add("animate-encrypt"));
+    } else {
+        [inputCard, actionCard, resultContainer].forEach(el=> el.classList.add("animate-decrypt"));
+    }
+}
+
 // 事件绑定
 document.getElementById('encryptInput').addEventListener('input', (e)=>{
     e.target.value = e.target.value.replace(/\D/g,''); // 只保留数字
@@ -196,6 +234,7 @@ document.getElementById('encryptBtn').addEventListener('click',()=>{
     const encrypted=encryptNumber(input);
     document.getElementById('decryptInput').value=encrypted;
     addHistory('加密',input,encrypted);
+    highlightAction("encrypt");
 });
 
 document.getElementById('decryptBtn').addEventListener('click',()=>{
@@ -206,6 +245,7 @@ document.getElementById('decryptBtn').addEventListener('click',()=>{
     const decrypted=decryptNumber(input);
     document.getElementById('decryptInput').value=decrypted;
     addHistory('解密',input,decrypted);
+    highlightAction("decrypt");
 });
 
 // 复制功能
