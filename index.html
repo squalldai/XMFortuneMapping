@@ -24,7 +24,7 @@ label { font-weight:500;margin-bottom:6px;display:block; text-align:left; width:
 
 /* 输入输出行 */
 .input-row, .result-row { display:flex; align-items:center; gap:8px; width:100%; }
-.prefix, .prefix-out { min-width:60px; text-align:right; font-weight:600; color:#555; }
+.prefix, .prefix-out { min-width:90px; text-align:right; font-weight:600; color:#555; }
 
 /* 输入输出框 */
 input[type="tel"], input[type="text"] {
@@ -54,7 +54,6 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,11
 @keyframes flash-decrypt { 0% { background-color: rgba(255,152,0,0.4);} 100% { background-color: rgba(255,152,0,0.12);} }
 .flash-encrypt { animation: flash 0.6s forwards; }
 .flash-decrypt { animation: flash-decrypt 0.6s forwards; }
-
 </style>
 </head>
 <body>
@@ -71,7 +70,7 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,11
 
   <div id="operationPanel" class="panel">
     <div class="input-row">
-      <span id="inputPrefix" class="prefix"></span>
+      <span id="inputPrefix" class="prefix">输入数字：</span>
       <input id="inputNum" type="tel" maxlength="4" placeholder="4位"/>
     </div>
 
@@ -81,7 +80,7 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,11
     </div>
 
     <div class="result-row">
-      <span id="outputPrefix" class="prefix-out"></span>
+      <span id="outputPrefix" class="prefix-out">结果：</span>
       <input id="outputNum" type="text" readonly />
     </div>
   </div>
