@@ -6,126 +6,126 @@
 <title>四位数字加密解密</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: 'Roboto', sans-serif; margin:0;padding:20px;background:#f0f2f5; color:#333; }
-  h2 { text-align:center;color:#1976d2;margin-bottom:10px;font-weight:700; }
-  .description { text-align:center;color:#555;font-size:0.95em;margin-bottom:20px; line-height:1.5; }
-  .card { background: rgba(255,255,255,0.9); backdrop-filter: blur(6px); border-radius:16px; padding:20px; margin-bottom:20px;
-          box-shadow: 0 6px 25px rgba(0,0,0,0.08); transition: background-color 0.6s ease, box-shadow 0.3s ease;}
-  label { font-weight:500;margin-bottom:6px;display:block; }
-  .input-row, .result-row { display:flex; align-items:center; margin-bottom:12px; transition: background-color 0.6s ease, box-shadow 0.3s ease; border-radius:12px; padding:4px; }
-  .prefix, .prefix-out { min-width:60px; text-align:right; margin-right:8px; font-weight:600; color:#555; }
-  input[type="tel"], input[type="text"] {
+body { font-family: 'Roboto', sans-serif; margin:0;padding:20px;background:#f0f2f5; color:#333; }
+h2 { text-align:center;color:#1976d2;margin-bottom:10px;font-weight:700; }
+.description { text-align:center;color:#555;font-size:0.95em;margin-bottom:20px; line-height:1.5; }
+
+/* 整体卡片 */
+.card { background: rgba(255,255,255,0.9); backdrop-filter: blur(6px); border-radius:16px; padding:20px; 
+       margin-bottom:20px; box-shadow: 0 6px 25px rgba(0,0,0,0.08); }
+
+/* 操作面板 */
+.panel { background: rgba(255,255,255,0.6); border-radius:14px; padding:15px; 
+         display:flex; flex-direction:column; align-items:center; gap:12px; 
+         transition: background-color 0.6s, box-shadow 0.3s; }
+
+/* 标签 */
+label { font-weight:500;margin-bottom:6px;display:block; text-align:left; width:100%; }
+
+/* 输入输出行 */
+.input-row, .result-row { display:flex; align-items:center; gap:8px; width:100%; }
+.prefix, .prefix-out { min-width:60px; text-align:right; font-weight:600; color:#555; }
+
+/* 输入输出框 */
+input[type="tel"], input[type="text"] {
     width:130px; font-size:1.3em; padding:10px; border-radius:12px; border:1px solid #ccc;
     text-align:center; letter-spacing:3px; box-sizing:border-box;
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
     transition: border 0.3s, box-shadow 0.3s;
-  }
-  input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,118,210,0.2) inset; }
-  .buttons { display:flex; gap:12px; margin:12px 0; transition: background-color 0.6s; }
-  .btn { flex:1; padding:12px; border-radius:14px; border:none; color:#fff; font-size:1.05em; cursor:pointer;
-         display:flex; align-items:center; justify-content:center; gap:6px; font-weight:500; transition: all 0.2s ease; }
-  .btn:hover { transform: translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.18); }
-  #encryptBtn{background: linear-gradient(135deg,#42a5f5,#1976d2); box-shadow:0 4px 14px rgba(25,118,210,0.3);}
-  #decryptBtn{background: linear-gradient(135deg,#ffb74d,#f57c00); box-shadow:0 4px 14px rgba(255,152,0,0.3);}
-  .mode-indicator { text-align:center;padding:8px;font-weight:600;margin-bottom:12px;border-radius:12px;
-                    font-size:1em; box-shadow: inset 0 0 0 rgba(0,0,0,0); transition: background 0.6s, color 0.6s; }
-  .mode-encrypt{background:#eaf6ff;color:#0b57a8;}
-  .mode-decrypt{background:#fff7ea;color:#9f5600;}
+}
+input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,118,210,0.2) inset; }
 
-  /* 闪烁动画 */
-  @keyframes flash {
-    0%   { background-color: rgba(25,118,210,0.4); }
-    100% { background-color: rgba(25,118,210,0.12); }
-  }
-  @keyframes flash-decrypt {
-    0%   { background-color: rgba(255,152,0,0.4); }
-    100% { background-color: rgba(255,152,0,0.12); }
-  }
-  .flash-encrypt { animation: flash 0.6s forwards; }
-  .flash-decrypt { animation: flash-decrypt 0.6s forwards; }
+/* 按钮 */
+.buttons { display:flex; gap:12px; width:100%; }
+.btn { flex:1; padding:12px; border-radius:14px; border:none; color:#fff; font-size:1.05em; cursor:pointer;
+       display:flex; align-items:center; justify-content:center; gap:6px; font-weight:500; transition: all 0.2s ease; }
+.btn:hover { transform: translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.18); }
+#encryptBtn{background: linear-gradient(135deg,#42a5f5,#1976d2); box-shadow:0 4px 14px rgba(25,118,210,0.3);}
+#decryptBtn{background: linear-gradient(135deg,#ffb74d,#f57c00); box-shadow:0 4px 14px rgba(255,152,0,0.3);}
+
+/* 模式指示 */
+.mode-indicator { text-align:center;padding:8px;font-weight:600;margin-bottom:12px;border-radius:12px;
+                  font-size:1em; box-shadow: inset 0 0 0 rgba(0,0,0,0); transition: background 0.6s, color 0.6s; }
+.mode-encrypt{background:#eaf6ff;color:#0b57a8;}
+.mode-decrypt{background:#fff7ea;color:#9f5600;}
+
+/* 闪烁动画 */
+@keyframes flash { 0% { background-color: rgba(25,118,210,0.4);} 100% { background-color: rgba(25,118,210,0.12);} }
+@keyframes flash-decrypt { 0% { background-color: rgba(255,152,0,0.4);} 100% { background-color: rgba(255,152,0,0.12);} }
+.flash-encrypt { animation: flash 0.6s forwards; }
+.flash-decrypt { animation: flash-decrypt 0.6s forwards; }
+
 </style>
 </head>
 <body>
-  <h2>🔐 四位数字加密解密</h2>
-  <p class="description">输入四位数字并加密或解密。使用固定密钥 <b>ht1416</b>，保证唯一映射，可逆可还原。</p>
+<h2>🔐 四位数字加密解密</h2>
+<p class="description">输入四位数字并加密或解密。使用固定密钥 <b>ht1416</b>，保证唯一映射，可逆可还原。</p>
 
-  <div class="card">
-    <div>
-      <label>选择模式</label>
-      <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
-    </div>
+<div class="card">
+  <div>
+    <label>选择模式</label>
+    <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
+  </div>
 
-    <div id="modeIndicator" class="mode-indicator">当前模式：待选择</div>
+  <div id="modeIndicator" class="mode-indicator">当前模式：待选择</div>
 
-    <label>输入数字</label>
-    <div id="inputArea" class="input-row">
+  <div id="operationPanel" class="panel">
+    <div class="input-row">
       <span id="inputPrefix" class="prefix"></span>
       <input id="inputNum" type="tel" maxlength="4" placeholder="4位"/>
     </div>
 
-    <div id="buttonArea" class="buttons">
+    <div class="buttons">
       <button id="encryptBtn" class="btn">🔒 加密</button>
       <button id="decryptBtn" class="btn">🔓 解密</button>
     </div>
 
-    <label>结果</label>
-    <div id="outputArea" class="result-row">
+    <div class="result-row">
       <span id="outputPrefix" class="prefix-out"></span>
       <input id="outputNum" type="text" readonly />
     </div>
   </div>
+</div>
 
 <script>
-  const input = document.getElementById('inputNum');
-  const output = document.getElementById('outputNum');
-  const inputPrefix = document.getElementById('inputPrefix');
-  const outputPrefix = document.getElementById('outputPrefix');
-  const modeIndicator = document.getElementById('modeIndicator');
-  const inputArea = document.getElementById('inputArea');
-  const buttonArea = document.getElementById('buttonArea');
-  const outputArea = document.getElementById('outputArea');
+const input = document.getElementById('inputNum');
+const output = document.getElementById('outputNum');
+const inputPrefix = document.getElementById('inputPrefix');
+const outputPrefix = document.getElementById('outputPrefix');
+const modeIndicator = document.getElementById('modeIndicator');
+const operationPanel = document.getElementById('operationPanel');
 
-  // 模拟加解密，替换成密钥驱动置换算法即可
-  function encrypt(num){ return (parseInt(num)+1234).toString().padStart(4,'0').slice(-4); }
-  function decrypt(num){ return (parseInt(num)-1234+10000).toString().padStart(4,'0').slice(-4); }
+// 模拟加解密，可替换为密钥驱动置换算法
+function encrypt(num){ return (parseInt(num)+1234).toString().padStart(4,'0').slice(-4); }
+function decrypt(num){ return (parseInt(num)-1234+10000).toString().padStart(4,'0').slice(-4); }
 
-  function highlight(mode){
-    if(mode==="encrypt"){
-      [inputArea, buttonArea, outputArea].forEach(el=>{
-        el.classList.remove("flash-decrypt");
-        void el.offsetWidth;
-        el.classList.add("flash-encrypt");
-      });
-    }else{
-      [inputArea, buttonArea, outputArea].forEach(el=>{
-        el.classList.remove("flash-encrypt");
-        void el.offsetWidth;
-        el.classList.add("flash-decrypt");
-      });
-    }
-  }
+function highlight(mode){
+  operationPanel.classList.remove("flash-encrypt","flash-decrypt");
+  void operationPanel.offsetWidth;
+  operationPanel.classList.add(mode==="encrypt"?"flash-encrypt":"flash-decrypt");
+}
 
-  document.getElementById('encryptBtn').addEventListener('click', ()=>{
-    let val = input.value.trim();
-    if(!/^\d{4}$/.test(val)){ alert("请输入四位数字"); return; }
-    output.value = encrypt(val);
-    inputPrefix.textContent = "800880";
-    outputPrefix.textContent = "HT-";
-    modeIndicator.textContent = "当前模式：加密";
-    modeIndicator.className = "mode-indicator mode-encrypt";
-    highlight("encrypt");
-  });
+document.getElementById('encryptBtn').addEventListener('click', ()=>{
+  let val = input.value.trim();
+  if(!/^\d{4}$/.test(val)){ alert("请输入四位数字"); return; }
+  output.value = encrypt(val);
+  inputPrefix.textContent = "800880";
+  outputPrefix.textContent = "HT-";
+  modeIndicator.textContent = "当前模式：加密";
+  modeIndicator.className = "mode-indicator mode-encrypt";
+  highlight("encrypt");
+});
 
-  document.getElementById('decryptBtn').addEventListener('click', ()=>{
-    let val = input.value.trim();
-    if(!/^\d{4}$/.test(val)){ alert("请输入四位数字"); return; }
-    output.value = decrypt(val);
-    inputPrefix.textContent = "HT-";
-    outputPrefix.textContent = "800880";
-    modeIndicator.textContent = "当前模式：解密";
-    modeIndicator.className = "mode-indicator mode-decrypt";
-    highlight("decrypt");
-  });
+document.getElementById('decryptBtn').addEventListener('click', ()=>{
+  let val = input.value.trim();
+  if(!/^\d{4}$/.test(val)){ alert("请输入四位数字"); return; }
+  output.value = decrypt(val);
+  inputPrefix.textContent = "HT-";
+  outputPrefix.textContent = "800880";
+  modeIndicator.textContent = "当前模式：解密";
+  modeIndicator.className = "mode-indicator mode-decrypt";
+  highlight("decrypt");
+});
 </script>
 </body>
 </html>
