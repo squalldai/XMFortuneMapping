@@ -28,15 +28,14 @@ label { font-weight:500;margin-bottom:6px;display:block; text-align:left; width:
 
 /* 动态前缀 */
 .dynamic-prefix { font-weight:700; min-width:70px; text-align:right; transition: all 0.3s; display:inline-block; }
-/* 动态前缀字体减小8% */
-.dynamic-encrypt { font-size:1.196em; color:#1976d2; } /* 原 1.3em */
+.dynamic-encrypt { font-size:1.196em; color:#1976d2; } 
 .dynamic-decrypt { font-size:1.196em; color:#f57c00; }
 
-/* 输入输出框大小减小15%，字体减小8% */
+/* 输入输出框 */
 input[type="tel"], input[type="text"] {
     flex-grow:1; font-size:1.104em; padding:6.8px; border-radius:8.5px; border:1px solid #ccc;
     text-align:center; letter-spacing:3px; box-sizing:border-box;
-    max-width:136px;  /* 原 160px，减15% */
+    max-width:136px;
     box-shadow: inset 0 1.7px 3.4px rgba(0,0,0,0.06);
     transition: border 0.3s, box-shadow 0.3s;
 }
@@ -71,6 +70,7 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 6.8px rgba(25,1
   <div>
     <label>选择模式</label>
     <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
+    <label><input type="radio" name="mode" value="DZC" disabled> 德之馨(开发中)</label>
   </div>
 
   <div id="modeIndicator" class="mode-indicator">当前模式：待选择</div>
