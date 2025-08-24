@@ -1,197 +1,336 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>四位数字加密解密</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-body { font-family: 'Roboto', sans-serif; margin:0;padding:20px;background:#f0f2f5; color:#333; }
-canvas#logoCanvas { display:block; margin:0 auto 10px auto; width:100%; height:80px; } 
-h2 { text-align:center;color:#1976d2;margin-bottom:10px;font-weight:700; }
-.description { text-align:center;color:#555;font-size:0.95em;margin-bottom:20px; line-height:1.5; }
-.card { background: rgba(255,255,255,0.9); backdrop-filter: blur(6px); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow: 0 6px 25px rgba(0,0,0,0.08); }
-.panel { background: rgba(255,255,255,0.6); border-radius:14px; padding:15px; display:flex; flex-direction:column; align-items:center; gap:12px; transition: background-color 0.6s, box-shadow 0.3s; }
-label { font-weight:500;margin-bottom:6px;display:block; text-align:left; width:100%; }
-.input-row, .result-row { display:flex; align-items:center; gap:8px; width:100%; max-width:360px; }
-.static-text { font-weight:600; color:#555; min-width:80px; text-align:right; }
-.dynamic-prefix { font-weight:700; min-width:70px; text-align:right; transition: all 0.3s; display:inline-block; }
-.dynamic-encrypt { font-size:1.196em; color:#1976d2; } 
-.dynamic-decrypt { font-size:1.196em; color:#f57c00; }
-input[type="tel"], input[type="text"] {
-    flex-grow:1; font-size:1.104em; padding:6.8px; border-radius:8.5px; border:1px solid #ccc;
-    text-align:center; letter-spacing:3px; box-sizing:border-box; max-width:136px;
-    box-shadow: inset 0 1.7px 3.4px rgba(0,0,0,0.06); transition: border 0.3s, box-shadow 0.3s;
-}
-input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 6.8px rgba(25,118,210,0.2) inset; }
-.buttons { display:flex; gap:12px; width:100%; max-width:360px; }
-.btn { flex:1; padding:10px; border-radius:12px; border:none; color:#fff; font-size:1em; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:500; transition: all 0.2s ease; }
-.btn:hover { transform: translateY(-2px); box-shadow:0 3px 10px rgba(0,0,0,0.15); }
-#encryptBtn{background: linear-gradient(135deg,#42a5f5,#1976d2); box-shadow:0 3px 10px rgba(25,118,210,0.25);}
-#decryptBtn{background: linear-gradient(135deg,#ffb74d,#f57c00); box-shadow:0 3px 10px rgba(255,152,0,0.25);}
-.mode-indicator { text-align:center;padding:6px;font-weight:600;margin-bottom:12px;border-radius:12px;font-size:0.95em; box-shadow: inset 0 0 0 rgba(0,0,0,0); transition: background 0.6s, color 0.6s; }
-.mode-encrypt{background:#eaf6ff;color:#0b57a8;}
-.mode-decrypt{background:#fff7ea;color:#9f5600;}
-@keyframes flash { 0% { background-color: rgba(25,118,210,0.4);} 100% { background-color: rgba(25,118,210,0.12);} }
-@keyframes flash-decrypt { 0% { background-color: rgba(255,152,0,0.4);} 100% { background-color: rgba(255,152,0,0.12);} }
-.flash-encrypt { animation: flash 0.6s forwards; }
-.flash-decrypt { animation: flash-decrypt 0.6s forwards; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数字加解密工具 v1.0</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9fb;
+      color: #333;
+    }
+
+    /* 页眉像素画背景 */
+    #pixelCanvas {
+      display: block;
+      width: 100%;
+      height: 15vh;
+      image-rendering: pixelated;
+      background: #ffe;
+    }
+
+    header {
+      background: linear-gradient(135deg, #4a90e2, #50c9ce);
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 1.5em;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .version {
+      text-align: center;
+      font-size: 0.8em;
+      color: #888;
+      margin-top: 4px;
+      margin-bottom: 12px;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 480px;
+      margin: auto;
+    }
+
+    .description {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #555;
+      font-size: 0.95em;
+    }
+
+    .mode-select {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .mode-select label {
+      margin: 0 10px;
+      font-size: 0.95em;
+    }
+
+    .mode-select input[type="radio"]:disabled + span {
+      color: gray;
+    }
+
+    .io-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .prefix {
+      font-size: 1.1em;
+      font-weight: bold;
+      min-width: 70px;
+      text-align: right;
+      margin-right: 5px;
+      color: #444;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 1.1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+
+    button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    #encryptBtn {
+      background: #4a90e2;
+    }
+
+    #decryptBtn {
+      background: #50c9ce;
+    }
+
+    button i {
+      margin-right: 6px;
+    }
+
+    .highlight {
+      animation: flash 0.5s ease;
+      background-color: rgba(80, 201, 206, 0.15);
+    }
+
+    @keyframes flash {
+      0% { background-color: rgba(255, 230, 0, 0.6); }
+      100% { background-color: rgba(80, 201, 206, 0.15); }
+    }
+
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 0.9em;
+    }
+
+    .log-entry {
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed #ddd;
+    }
+  </style>
 </head>
 <body>
+  <!-- v1.0 版本像素画 Canvas -->
+  <canvas id="pixelCanvas"></canvas>
 
-<!-- 食品主题复杂像素风 logo -->
-<canvas id="logoCanvas"></canvas>
+  <header>🔐 数字加解密工具</header>
+  <div class="version">版本 v1.0</div>
 
-<h2>🔐 四位数字加密解密</h2>
-<p class="description">输入四位数字并加密或解密。使用固定密钥 <b>ht1416</b>，保证唯一映射，可逆可还原。</p>
+  <div class="container">
+    <p class="description">输入四位数字，通过对称加密算法进行加密或解密，确保结果唯一且可逆。</p>
 
-<div class="card">
-  <div>
-    <label>选择模式</label>
-    <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
-    <label><input type="radio" name="mode" value="DZC" disabled> <span style="color:gray;">德之馨(开发中)</span></label>
-  </div>
+    <div class="mode-select">
+      <label><input type="radio" name="mode" checked><span>ADM</span></label>
+      <label><input type="radio" name="mode" disabled><span>德之馨 (开发中)</span></label>
+    </div>
 
-  <div id="modeIndicator" class="mode-indicator">当前模式：待选择</div>
-
-  <div id="operationPanel" class="panel">
-    <div class="input-row">
-      <span class="static-text">输入数字：</span>
-      <span id="inputDynamic" class="dynamic-prefix"></span>
-      <input id="inputNum" type="tel" maxlength="4" placeholder="4位"/>
+    <div class="io-group" id="inputGroup">
+      <span class="prefix" id="inputPrefix">输入</span>
+      <input type="text" id="inputNumber" maxlength="4" placeholder="输入4位数字">
     </div>
 
     <div class="buttons">
-      <button id="encryptBtn" class="btn">🔒 加密</button>
-      <button id="decryptBtn" class="btn">🔓 解密</button>
+      <button id="encryptBtn"><i>🔒</i> 加密</button>
+      <button id="decryptBtn"><i>🔓</i> 解密</button>
     </div>
 
-    <div class="result-row">
-      <span class="static-text">结果：</span>
-      <span id="outputDynamic" class="dynamic-prefix"></span>
-      <input id="outputNum" type="text" readonly />
+    <div class="io-group" id="outputGroup">
+      <span class="prefix" id="outputPrefix">结果</span>
+      <input type="text" id="outputNumber" readonly>
     </div>
+
+    <div class="log" id="log"></div>
   </div>
-</div>
 
-<script>
-// ---------- 食品主题复杂像素风 logo ----------
-const canvas = document.getElementById('logoCanvas');
-const ctx = canvas.getContext('2d');
-
-function drawFoodComplexLogo(){
-    const w = canvas.width = canvas.clientWidth;
-    const h = canvas.height = canvas.clientHeight;
-    const px = Math.floor(h/10); // 基础像素块大小
-    ctx.clearRect(0,0,w,h);
-    
-    // 背景
-    ctx.fillStyle="#f0f2f5";
-    ctx.fillRect(0,0,w,h);
-
-    // 多个饮料
-    ctx.fillStyle="#42a5f5"; ctx.fillRect(px, px*2, px*2, px*5);
-    ctx.fillStyle="#1976d2"; ctx.fillRect(px*2, px, px, px); // 吸管
-    ctx.fillStyle="#4fc3f7"; ctx.fillRect(px*4, px*3, px*2, px*5);
-    ctx.fillStyle="#0288d1"; ctx.fillRect(px*5, px*2, px, px); // 吸管
-
-    // 蛋糕/烘焙品
-    ctx.fillStyle="#ffb74d"; ctx.fillRect(px*7, px*4, px*3, px*3);
-    ctx.fillStyle="#f57c00"; ctx.fillRect(px*7, px*3, px*3, px); // 糖霜
-    ctx.fillStyle="#ff8a65"; ctx.fillRect(px*11, px*4, px*2, px*3);
-    ctx.fillStyle="#d84315"; ctx.fillRect(px*11, px*3, px*2, px); // 糖霜
-
-    // 糖果
-    ctx.fillStyle="#f48fb1"; ctx.fillRect(px*2, px*8, px, px);
-    ctx.fillStyle="#ce93d8"; ctx.fillRect(px*3, px*8, px, px);
-    ctx.fillStyle="#ffb74d"; ctx.fillRect(px*5, px*8, px, px);
-    ctx.fillStyle="#81c784"; ctx.fillRect(px*6, px*8, px, px);
-
-    // 饼干
-    ctx.fillStyle="#bcaaa4"; ctx.fillRect(px*9, px*8, px, px);
-    ctx.fillStyle="#a1887f"; ctx.fillRect(px*10, px*8, px, px);
-}
-drawFoodComplexLogo();
-
-// ---------- 密钥驱动伪随机双射逻辑 ----------
-const KEY = "ht1416";
-function hashSeed(str) {
-    let hash = 0;
-    for(let i=0;i<str.length;i++){
-        hash = (hash*31 + str.charCodeAt(i)) % 1000000000;
+  <script>
+    // --- v1.0 像素画生成 ---
+    const canvas = document.getElementById("pixelCanvas");
+    const ctx = canvas.getContext("2d");
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight * 0.15;
+      drawScene();
     }
-    return hash;
-}
-function PRNG(seed){
-    return function(){
-        seed |= 0;
-        seed = (seed + 0x6D2B79F5)|0;
-        let t = Math.imul(seed ^ seed>>>15, 1 | seed);
-        t = (t + Math.imul(t ^ t>>>7, 61 | t)) ^ t;
-        return ((t ^ t>>>14) >>>0)/4294967296;
+    window.addEventListener("resize", resizeCanvas);
+
+    function drawScene() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const pixel = Math.max(4, Math.floor(h/20)); // 像素大小
+      ctx.fillStyle = "#ffe";
+      ctx.fillRect(0,0,w,h);
+
+      // 桌子
+      ctx.fillStyle = "#d9a066";
+      ctx.fillRect(0,h-pixel*4,w,pixel*4);
+
+      // 杯子
+      ctx.fillStyle = "#6dc5d1";
+      ctx.fillRect(pixel*4,h-pixel*8,pixel*3,pixel*4);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(pixel*4,h-pixel*9,pixel*3,pixel);
+
+      // 蛋糕
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(pixel*12,h-pixel*6,pixel*5,pixel*2);
+      ctx.fillStyle = "#f08080";
+      ctx.fillRect(pixel*12,h-pixel*7,pixel*5,pixel);
+      ctx.fillStyle = "#deb887";
+      ctx.fillRect(pixel*12,h-pixel*8,pixel*5,pixel);
+
+      // 糖果
+      ctx.fillStyle = "#ff69b4";
+      ctx.beginPath();
+      ctx.arc(pixel*24,h-pixel*6,pixel*2,0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = "#add8e6";
+      ctx.beginPath();
+      ctx.arc(pixel*28,h-pixel*6,pixel*2,0,Math.PI*2);
+      ctx.fill();
     }
-}
-function generatePermutation(seed){
-    const rand = PRNG(seed);
-    const arr = [];
-    for(let i=0;i<10000;i++) arr.push(i);
-    for(let i=arr.length-1;i>0;i--){
-        const j = Math.floor(rand()* (i+1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+    resizeCanvas();
+
+    // --- v1.0 加解密逻辑 ---
+    function seededRandom(seed) {
+      let h = 0;
+      for (let i = 0; i < seed.length; i++) {
+        h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+      }
+      return function() {
+        h ^= h << 13;
+        h ^= h >>> 17;
+        h ^= h << 5;
+        return (h < 0 ? ~h + 1 : h) % 1e9 / 1e9;
+      }
     }
-    return arr;
-}
-const seed = hashSeed(KEY);
-const permutation = generatePermutation(seed);
-const encryptMap = {};
-const decryptMap = {};
-for(let i=0;i<10000;i++){
-    const key = i.toString().padStart(4,'0');
-    const val = permutation[i].toString().padStart(4,'0');
-    encryptMap[key]=val;
-    decryptMap[val]=key;
-}
 
-// ---------- 页面逻辑 ----------
-const input = document.getElementById('inputNum');
-const output = document.getElementById('outputNum');
-const inputDynamic = document.getElementById('inputDynamic');
-const outputDynamic = document.getElementById('outputDynamic');
-const modeIndicator = document.getElementById('modeIndicator');
-const operationPanel = document.getElementById('operationPanel');
+    function shuffleWithSeed(arr, seed) {
+      const rand = seededRandom(seed);
+      let a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
 
-function highlight(mode){
-  operationPanel.classList.remove("flash-encrypt","flash-decrypt");
-  void operationPanel.offsetWidth;
-  operationPanel.classList.add(mode==="encrypt"?"flash-encrypt":"flash-decrypt");
-}
+    const key = "ht1416";
+    const digits = "0123456789".split("");
+    const shuffledDigits = shuffleWithSeed(digits, key);
+    const encMap = {};
+    const decMap = {};
+    digits.forEach((d, i) => {
+      encMap[d] = shuffledDigits[i];
+      decMap[shuffledDigits[i]] = d;
+    });
 
-document.getElementById('encryptBtn').addEventListener('click', ()=>{
-  let val = input.value.trim();
-  if(!/^\d{4}$/.test(val)){ alert("请输入四位数字"); return; }
-  output.value = encryptMap[val];
-  inputDynamic.textContent = "800880";
-  outputDynamic.textContent = "HT-";
-  inputDynamic.className = "dynamic-prefix dynamic-encrypt";
-  outputDynamic.className = "dynamic-prefix dynamic-encrypt";
-  modeIndicator.textContent = "当前模式：加密";
-  modeIndicator.className = "mode-indicator mode-encrypt";
-  highlight("encrypt");
-});
+    function encrypt(num) {
+      return num.split("").map(d => encMap[d] || d).join("");
+    }
 
-document.getElementById('decryptBtn').addEventListener('click', ()=>{
-  let val = input.value.trim();
-  if(!/^\d{4}$/.test(val)){ alert("请输入四位数字"); return; }
-  output.value = decryptMap[val];
-  inputDynamic.textContent = "HT-";
-  outputDynamic.textContent = "800880";
-  inputDynamic.className = "dynamic-prefix dynamic-decrypt";
-  outputDynamic.className = "dynamic-prefix dynamic-decrypt";
-  modeIndicator.textContent = "当前模式：解密";
-  modeIndicator.className = "mode-indicator mode-decrypt";
-  highlight("decrypt");
-});
-</script>
+    function decrypt(num) {
+      return num.split("").map(d => decMap[d] || d).join("");
+    }
+
+    const inputBox = document.getElementById("inputNumber");
+    const outputBox = document.getElementById("outputNumber");
+    const inputPrefix = document.getElementById("inputPrefix");
+    const outputPrefix = document.getElementById("outputPrefix");
+    const log = document.getElementById("log");
+
+    function addLog(action, input, result) {
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      entry.textContent = `[${action}] 输入: ${input} -> 输出: ${result}`;
+      log.prepend(entry);
+    }
+
+    document.getElementById("encryptBtn").addEventListener("click", () => {
+      const val = inputBox.value.trim();
+      if (!/^[0-9]{4}$/.test(val)) {
+        alert("请输入4位数字");
+        return;
+      }
+      const result = encrypt(val);
+      outputBox.value = result;
+      inputPrefix.textContent = "800880";
+      outputPrefix.textContent = "HT-";
+      document.getElementById("inputGroup").classList.add("highlight");
+      document.getElementById("outputGroup").classList.add("highlight");
+      setTimeout(() => {
+        document.getElementById("inputGroup").classList.remove("highlight");
+        document.getElementById("outputGroup").classList.remove("highlight");
+      }, 600);
+      addLog("加密", val, result);
+    });
+
+    document.getElementById("decryptBtn").addEventListener("click", () => {
+      const val = inputBox.value.trim();
+      if (!/^[0-9]{4}$/.test(val)) {
+        alert("请输入4位数字");
+        return;
+      }
+      const result = decrypt(val);
+      outputBox.value = result;
+      inputPrefix.textContent = "HT-";
+      outputPrefix.textContent = "800880";
+      document.getElementById("inputGroup").classList.add("highlight");
+      document.getElementById("outputGroup").classList.add("highlight");
+      setTimeout(() => {
+        document.getElementById("inputGroup").classList.remove("highlight");
+        document.getElementById("outputGroup").classList.remove("highlight");
+      }, 600);
+      addLog("解密", val, result);
+    });
+  </script>
 </body>
 </html>
