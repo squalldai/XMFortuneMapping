@@ -45,7 +45,7 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 6.8px rgba(25,1
   <div>
     <label>选择模式</label>
     <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
-    <label><input type="radio" name="mode" value="DZC" disabled> 德之馨(开发中)</label>
+    <label><input type="radio" name="mode" value="DZC" disabled> <span style="color:gray;">德之馨(开发中)</span></label>
   </div>
 
   <div id="modeIndicator" class="mode-indicator">当前模式：待选择</div>
@@ -73,8 +73,6 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 6.8px rgba(25,1
 <script>
 // --------- 密钥驱动伪随机与洗牌双射逻辑 ---------
 const KEY = "ht1416";
-
-// 简单哈希函数生成整数种子
 function hashSeed(str) {
     let hash = 0;
     for(let i=0;i<str.length;i++){
@@ -82,8 +80,6 @@ function hashSeed(str) {
     }
     return hash;
 }
-
-// 可复现的伪随机数生成器 (Mulberry32)
 function PRNG(seed){
     return function(){
         seed |= 0;
@@ -93,25 +89,18 @@ function PRNG(seed){
         return ((t ^ t>>>14) >>>0)/4294967296;
     }
 }
-
-// 生成密钥驱动的置换表
 function generatePermutation(seed){
     const rand = PRNG(seed);
     const arr = [];
     for(let i=0;i<10000;i++) arr.push(i);
-    // Fisher-Yates 洗牌
     for(let i=arr.length-1;i>0;i--){
         const j = Math.floor(rand()* (i+1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
 }
-
-// 初始化映射表
 const seed = hashSeed(KEY);
 const permutation = generatePermutation(seed);
-
-// 创建加解密查表
 const encryptMap = {};
 const decryptMap = {};
 for(let i=0;i<10000;i++){
