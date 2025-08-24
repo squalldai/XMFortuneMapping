@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 body { font-family: 'Roboto', sans-serif; margin:0;padding:20px;background:#f0f2f5; color:#333; }
-canvas#logoCanvas { display:block; margin:0 auto 10px auto; width:100%; max-width:360px; height:80px; } 
+canvas#logoCanvas { display:block; margin:0 auto 10px auto; width:100%; height:80px; } 
 h2 { text-align:center;color:#1976d2;margin-bottom:10px;font-weight:700; }
 .description { text-align:center;color:#555;font-size:0.95em;margin-bottom:20px; line-height:1.5; }
 .card { background: rgba(255,255,255,0.9); backdrop-filter: blur(6px); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow: 0 6px 25px rgba(0,0,0,0.08); }
@@ -40,7 +40,7 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 6.8px rgba(25,1
 </head>
 <body>
 
-<!-- 像素风食品主题 logo -->
+<!-- 食品主题复杂像素风 logo -->
 <canvas id="logoCanvas"></canvas>
 
 <h2>🔐 四位数字加密解密</h2>
@@ -76,42 +76,43 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 6.8px rgba(25,1
 </div>
 
 <script>
-// ---------- 食品主题像素风 logo ----------
+// ---------- 食品主题复杂像素风 logo ----------
 const canvas = document.getElementById('logoCanvas');
 const ctx = canvas.getContext('2d');
 
-function drawFoodLogo(){
+function drawFoodComplexLogo(){
     const w = canvas.width = canvas.clientWidth;
     const h = canvas.height = canvas.clientHeight;
-    const pixel = Math.floor(h/8);
-
+    const px = Math.floor(h/10); // 基础像素块大小
+    ctx.clearRect(0,0,w,h);
+    
     // 背景
     ctx.fillStyle="#f0f2f5";
     ctx.fillRect(0,0,w,h);
 
-    // 饮料
-    ctx.fillStyle="#42a5f5";
-    ctx.fillRect(pixel, pixel*2, pixel*2, pixel*4);
-    ctx.fillStyle="#1976d2";
-    ctx.fillRect(pixel*2, pixel, pixel, pixel); // 吸管
+    // 多个饮料
+    ctx.fillStyle="#42a5f5"; ctx.fillRect(px, px*2, px*2, px*5);
+    ctx.fillStyle="#1976d2"; ctx.fillRect(px*2, px, px, px); // 吸管
+    ctx.fillStyle="#4fc3f7"; ctx.fillRect(px*4, px*3, px*2, px*5);
+    ctx.fillStyle="#0288d1"; ctx.fillRect(px*5, px*2, px, px); // 吸管
 
-    // 烘焙品（蛋糕）
-    ctx.fillStyle="#ffb74d";
-    ctx.fillRect(pixel*4, pixel*3, pixel*3, pixel*2);
-    ctx.fillStyle="#f57c00";
-    ctx.fillRect(pixel*4, pixel*2, pixel*3, pixel); // 糖霜
+    // 蛋糕/烘焙品
+    ctx.fillStyle="#ffb74d"; ctx.fillRect(px*7, px*4, px*3, px*3);
+    ctx.fillStyle="#f57c00"; ctx.fillRect(px*7, px*3, px*3, px); // 糖霜
+    ctx.fillStyle="#ff8a65"; ctx.fillRect(px*11, px*4, px*2, px*3);
+    ctx.fillStyle="#d84315"; ctx.fillRect(px*11, px*3, px*2, px); // 糖霜
 
     // 糖果
-    ctx.fillStyle="#f48fb1";
-    ctx.fillRect(pixel*2, pixel*6, pixel, pixel);
-    ctx.fillStyle="#ce93d8";
-    ctx.fillRect(pixel*3, pixel*6, pixel, pixel);
+    ctx.fillStyle="#f48fb1"; ctx.fillRect(px*2, px*8, px, px);
+    ctx.fillStyle="#ce93d8"; ctx.fillRect(px*3, px*8, px, px);
+    ctx.fillStyle="#ffb74d"; ctx.fillRect(px*5, px*8, px, px);
+    ctx.fillStyle="#81c784"; ctx.fillRect(px*6, px*8, px, px);
 
-    // 简单装饰
-    ctx.fillStyle="#fff";
-    ctx.fillRect(pixel*5, pixel*5, pixel, pixel);
+    // 饼干
+    ctx.fillStyle="#bcaaa4"; ctx.fillRect(px*9, px*8, px, px);
+    ctx.fillStyle="#a1887f"; ctx.fillRect(px*10, px*8, px, px);
 }
-drawFoodLogo();
+drawFoodComplexLogo();
 
 // ---------- 密钥驱动伪随机双射逻辑 ----------
 const KEY = "ht1416";
