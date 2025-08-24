@@ -12,21 +12,34 @@
   .card { background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;
           box-shadow:0 2px 6px rgba(0,0,0,0.08);transition:background-color .6s ease; }
   label { font-weight:600;margin-bottom:6px;display:block; }
-  .input-row { display:flex; align-items:center; margin-bottom:8px; }
+  .input-row { display:flex; align-items:center; margin-bottom:8px; transition: background-color 0.6s; }
   .prefix { min-width:60px; text-align:right; margin-right:6px; font-weight:600; color:#555; }
-  input[type="text"], input[type="tel"] {
-    flex:1; font-size:1.2em;padding:10px;border:1px solid #ccc;border-radius:8px;
-    text-align:center;letter-spacing:3px;box-sizing:border-box;
+  input[type="tel"], input[type="text"] {
+    width:80px; font-size:1.3em; padding:8px; border:1px solid #ccc; border-radius:8px;
+    text-align:center; letter-spacing:3px; box-sizing:border-box;
   }
-  .buttons { display:flex; gap:10px; margin:10px 0; }
-  .btn { flex:1;padding:11px;border-radius:8px;border:none;color:#fff;font-size:1.02em;cursor:pointer; }
+  input:focus{outline:none;border-color:#1976d2;}
+  .buttons { display:flex; gap:10px; margin:10px 0; transition: background-color 0.6s; }
+  .btn { flex:1;padding:10px;border-radius:8px;border:none;color:#fff;font-size:1.02em;cursor:pointer; }
   #encryptBtn{background:#1976d2;} #decryptBtn{background:#ff9800;}
-  .result-row { display:flex; align-items:center; gap:8px; }
-  .result-row input { flex:1; background:#f6f6f6; pointer-events:none; }
+  .result-row { display:flex; align-items:center; gap:8px; transition: background-color 0.6s; }
+  .result-row input { flex:1; background:#f6f6f6; pointer-events:none; width:80px; }
   .prefix-out { min-width:60px; text-align:right; font-weight:600; color:#555; }
   .mode-indicator { text-align:center;padding:6px;font-weight:600;margin-bottom:8px;border-radius:8px; }
   .mode-encrypt{background:#eaf6ff;color:#0b57a8;}
   .mode-decrypt{background:#fff7ea;color:#9f5600;}
+
+  /* 闪烁动画 */
+  @keyframes flash {
+    0%   { background-color: rgba(25,118,210,0.3); }
+    100% { background-color: transparent; }
+  }
+  @keyframes flash-decrypt {
+    0%   { background-color: rgba(255,152,0,0.3); }
+    100% { background-color: transparent; }
+  }
+  .flash-encrypt { animation: flash 0.6s; background-color: rgba(25,118,210,0.12) !important; }
+  .flash-decrypt { animation: flash-decrypt 0.6s; background-color: rgba(255,152,0,0.12) !important; }
 </style>
 </head>
 <body>
@@ -42,18 +55,18 @@
     <div id="modeIndicator" class="mode-indicator">当前模式：待选择</div>
 
     <label>输入数字</label>
-    <div class="input-row">
+    <div id="inputArea" class="input-row">
       <span id="inputPrefix" class="prefix"></span>
-      <input id="inputNum" type="tel" maxlength="4" placeholder="输入四位数字"/>
+      <input id="inputNum" type="tel" maxlength="4" placeholder="4位"/>
     </div>
 
-    <div class="buttons">
+    <div id="buttonArea" class="buttons">
       <button id="encryptBtn" class="btn">加密</button>
       <button id="decryptBtn" class="btn">解密</button>
     </div>
 
     <label>结果</label>
-    <div class="result-row">
+    <div id="outputArea" class="result-row">
       <span id="outputPrefix" class="prefix-out"></span>
       <input id="outputNum" type="text" readonly />
     </div>
@@ -65,10 +78,29 @@
   const inputPrefix = document.getElementById('inputPrefix');
   const outputPrefix = document.getElementById('outputPrefix');
   const modeIndicator = document.getElementById('modeIndicator');
+  const inputArea = document.getElementById('inputArea');
+  const buttonArea = document.getElementById('buttonArea');
+  const outputArea = document.getElementById('outputArea');
 
-  // 模拟加解密（真实情况用你的置换表逻辑）
+  // 模拟加解密（替换成你的置换算法）
   function encrypt(num){ return (parseInt(num)+1234).toString().padStart(4,'0').slice(-4); }
   function decrypt(num){ return (parseInt(num)-1234+10000).toString().padStart(4,'0').slice(-4); }
+
+  function highlight(mode){
+    if(mode==="encrypt"){
+      [inputArea, buttonArea, outputArea].forEach(el=>{
+        el.classList.remove("flash-decrypt");
+        void el.offsetWidth; // 强制重绘
+        el.classList.add("flash-encrypt");
+      });
+    }else{
+      [inputArea, buttonArea, outputArea].forEach(el=>{
+        el.classList.remove("flash-encrypt");
+        void el.offsetWidth;
+        el.classList.add("flash-decrypt");
+      });
+    }
+  }
 
   document.getElementById('encryptBtn').addEventListener('click', ()=>{
     let val = input.value.trim();
@@ -78,6 +110,7 @@
     outputPrefix.textContent = "HT-";
     modeIndicator.textContent = "当前模式：加密";
     modeIndicator.className = "mode-indicator mode-encrypt";
+    highlight("encrypt");
   });
 
   document.getElementById('decryptBtn').addEventListener('click', ()=>{
@@ -88,6 +121,7 @@
     outputPrefix.textContent = "800880";
     modeIndicator.textContent = "当前模式：解密";
     modeIndicator.className = "mode-indicator mode-decrypt";
+    highlight("decrypt");
   });
 </script>
 </body>
