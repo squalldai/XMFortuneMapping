@@ -3,235 +3,255 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>数字加密解密工具</title>
+  <title>数字加解密工具</title>
   <style>
     body {
-      margin: 0;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #fdfbfb, #ebedee);
+      margin: 0;
+      padding: 0;
+      background: #f9f9fb;
       color: #333;
-      text-align: center;
     }
+
     header {
-      width: 100%;
-      height: 120px;
-      background: linear-gradient(90deg, #ffb74d, #ff7043);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    header h1 {
-      position: relative;
+      background: linear-gradient(135deg, #4a90e2, #50c9ce);
       color: white;
-      font-size: 26px;
-      letter-spacing: 2px;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      z-index: 1;
-    }
-    .container {
-      margin: 20px auto;
-      max-width: 420px;
-      background: rgba(255,255,255,0.75);
-      backdrop-filter: blur(12px);
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
-    .section {
-      margin: 18px 0;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 8px;
-      font-size: 15px;
-      color: #444;
-    }
-    .input-row, .output-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 14px;
-    }
-    .prefix {
-      font-size: 18px;
-      font-weight: bold;
-      margin-right: 8px;
-      min-width: 75px;
-      text-align: right;
-      color: #ff7043;
-    }
-    input {
-      width: 140px;
-      padding: 10px;
-      font-size: 16px;
       text-align: center;
-      border: none;
-      border-radius: 8px;
-      outline: none;
-      background: rgba(255,255,255,0.8);
-      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.1),
-                  inset -2px -2px 6px rgba(255,255,255,0.8);
-    }
-    button {
-      padding: 10px 18px;
-      margin: 8px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 16px;
+      padding: 15px;
+      font-size: 1.5em;
       font-weight: bold;
-      transition: all 0.3s;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      letter-spacing: 1px;
     }
-    button.encrypt {
-      background: linear-gradient(145deg,#66bb6a,#43a047);
-      color: white;
+
+    .container {
+      padding: 20px;
+      max-width: 480px;
+      margin: auto;
     }
-    button.decrypt {
-      background: linear-gradient(145deg,#42a5f5,#1e88e5);
-      color: white;
+
+    .description {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #555;
+      font-size: 0.95em;
     }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+
+    .mode-select {
+      margin-bottom: 20px;
+      text-align: center;
     }
-    .highlight {
-      animation: flash 1s;
+
+    .mode-select label {
+      margin: 0 10px;
+      font-size: 0.95em;
     }
-    @keyframes flash {
-      0% { background-color: rgba(255,255,0,0.3); }
-      100% { background-color: transparent; }
+
+    .mode-select input[type="radio"]:disabled + span {
+      color: gray;
     }
-    .log {
-      margin-top: 20px;
-      text-align: left;
-      font-size: 14px;
-      background: linear-gradient(145deg,#fafafa,#f0f0f0);
-      border: 1px solid #ddd;
-      padding: 12px;
-      border-radius: 12px;
-      max-height: 200px;
-      overflow-y: auto;
-      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.05);
-    }
-    .mode-options {
+
+    .io-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 15px;
     }
-    .mode-options label {
-      margin-right: 12px;
-      font-weight: normal;
+
+    .prefix {
+      font-size: 1.1em;
+      font-weight: bold;
+      min-width: 70px;
+      text-align: right;
+      margin-right: 5px;
+      color: #444;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 1.1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+
+    button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    #encryptBtn {
+      background: #4a90e2;
+    }
+
+    #decryptBtn {
+      background: #50c9ce;
+    }
+
+    button i {
+      margin-right: 6px;
+    }
+
+    .highlight {
+      animation: flash 0.5s ease;
+      background-color: rgba(80, 201, 206, 0.15);
+    }
+
+    @keyframes flash {
+      0% { background-color: rgba(255, 230, 0, 0.6); }
+      100% { background-color: rgba(80, 201, 206, 0.15); }
+    }
+
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 0.9em;
+    }
+
+    .log-entry {
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed #ddd;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>数字加密解密工具</h1>
-  </header>
+  <header>🔐 数字加解密工具</header>
 
   <div class="container">
-    <p>本工具用于对四位数字进行加密和解密，确保数据传输过程中的安全与可逆性。</p>
+    <p class="description">输入四位数字，通过对称加密算法进行加密或解密，确保结果唯一且可逆。</p>
 
-    <div class="mode-options">
-      <label>选择模式</label>
-      <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
-      <label><input type="radio" name="mode" value="DZC" disabled> <span style="color:gray;">德之馨(开发中)</span></label>
+    <div class="mode-select">
+      <label><input type="radio" name="mode" checked><span>ADM</span></label>
+      <label><input type="radio" name="mode" disabled><span>德之馨 (开发中)</span></label>
     </div>
 
-    <div class="section">
-      <label>输入数字</label>
-      <div class="input-row">
-        <span class="prefix" id="inputPrefix"></span>
-        <input type="text" id="inputText" maxlength="4" placeholder="输入4位数字">
-      </div>
+    <div class="io-group" id="inputGroup">
+      <span class="prefix" id="inputPrefix">输入</span>
+      <input type="text" id="inputNumber" maxlength="4" placeholder="输入4位数字">
     </div>
 
-    <div class="section">
-      <button class="encrypt" onclick="handleEncrypt()">🔒 加密</button>
-      <button class="decrypt" onclick="handleDecrypt()">🔓 解密</button>
+    <div class="buttons">
+      <button id="encryptBtn"><i>🔒</i> 加密</button>
+      <button id="decryptBtn"><i>🔓</i> 解密</button>
     </div>
 
-    <div class="section">
-      <label>结果</label>
-      <div class="output-row">
-        <span class="prefix" id="outputPrefix"></span>
-        <input type="text" id="outputText" readonly>
-      </div>
+    <div class="io-group" id="outputGroup">
+      <span class="prefix" id="outputPrefix">结果</span>
+      <input type="text" id="outputNumber" readonly>
     </div>
 
     <div class="log" id="log"></div>
   </div>
 
   <script>
-    // ===== 加密解密算法（密钥驱动洗牌双射） =====
-    const key = "ht1416";
-
+    // 基于密钥生成的洗牌算法（保证双射）
     function seededRandom(seed) {
-      let x = 0;
-      for (let i = 0; i < seed.length; i++) x += seed.charCodeAt(i);
+      let h = 0;
+      for (let i = 0; i < seed.length; i++) {
+        h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+      }
       return function() {
-        x ^= x << 13; x ^= x >> 17; x ^= x << 5;
-        return (x >>> 0) / 4294967296;
-      };
+        h ^= h << 13;
+        h ^= h >>> 17;
+        h ^= h << 5;
+        return (h >>> 0) / 4294967296;
+      }
     }
 
     function generateMapping(seed) {
-      const rng = seededRandom(seed);
-      const nums = [];
-      for (let i=0;i<10000;i++) nums.push(i);
-      for (let i=nums.length-1;i>0;i--) {
-        const j = Math.floor(rng()*(i+1));
-        [nums[i],nums[j]]=[nums[j],nums[i]];
+      let numbers = [];
+      for (let i = 0; i < 10000; i++) numbers.push(i);
+      let rng = seededRandom(seed);
+      for (let i = numbers.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
       }
-      const encMap = new Map();
-      const decMap = new Map();
-      for (let i=0;i<10000;i++) {
-        encMap.set(i, nums[i]);
-        decMap.set(nums[i], i);
+      return numbers;
+    }
+
+    const key = "ht1416";
+    const mapping = generateMapping(key);
+    const reverseMapping = new Array(10000);
+    mapping.forEach((val, idx) => reverseMapping[val] = idx);
+
+    const input = document.getElementById("inputNumber");
+    const output = document.getElementById("outputNumber");
+    const inputPrefix = document.getElementById("inputPrefix");
+    const outputPrefix = document.getElementById("outputPrefix");
+    const log = document.getElementById("log");
+
+    function logAction(action, before, after) {
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      entry.textContent = `${action}: ${before} → ${after}`;
+      log.prepend(entry);
+    }
+
+    function encrypt() {
+      const val = input.value;
+      if (!/^[0-9]{4}$/.test(val)) {
+        alert("请输入4位数字");
+        return;
       }
-      return {encMap, decMap};
+      const num = parseInt(val, 10);
+      const encrypted = mapping[num].toString().padStart(4, "0");
+      output.value = encrypted;
+      inputPrefix.textContent = "800880";
+      outputPrefix.textContent = "HT-";
+      document.getElementById("inputGroup").classList.add("highlight");
+      document.getElementById("outputGroup").classList.add("highlight");
+      logAction("加密", val, encrypted);
     }
 
-    const {encMap, decMap} = generateMapping(key);
-
-    function encrypt(num) {
-      const n = parseInt(num,10);
-      if(isNaN(n)||n<0||n>9999) return null;
-      return encMap.get(n).toString().padStart(4,"0");
-    }
-    function decrypt(num) {
-      const n = parseInt(num,10);
-      if(isNaN(n)||n<0||n>9999) return null;
-      return decMap.get(n).toString().padStart(4,"0");
-    }
-
-    // ===== 按钮操作逻辑 =====
-    function handleEncrypt(){
-      const input=document.getElementById("inputText").value;
-      const output=encrypt(input);
-      if(output===null){alert("请输入4位数字");return;}
-      document.getElementById("inputPrefix").textContent="800880";
-      document.getElementById("outputPrefix").textContent="HT-";
-      document.getElementById("outputText").value=output;
-      logAction("加密",input,output);
-    }
-    function handleDecrypt(){
-      const input=document.getElementById("inputText").value;
-      const output=decrypt(input);
-      if(output===null){alert("请输入4位数字");return;}
-      document.getElementById("inputPrefix").textContent="HT-";
-      document.getElementById("outputPrefix").textContent="800880";
-      document.getElementById("outputText").value=output;
-      logAction("解密",input,output);
+    function decrypt() {
+      const val = input.value;
+      if (!/^[0-9]{4}$/.test(val)) {
+        alert("请输入4位数字");
+        return;
+      }
+      const num = parseInt(val, 10);
+      const decrypted = reverseMapping[num].toString().padStart(4, "0");
+      output.value = decrypted;
+      inputPrefix.textContent = "HT-";
+      outputPrefix.textContent = "800880";
+      document.getElementById("inputGroup").classList.add("highlight");
+      document.getElementById("outputGroup").classList.add("highlight");
+      logAction("解密", val, decrypted);
     }
 
-    function logAction(type,input,output){
-      const log=document.getElementById("log");
-      const time=new Date().toLocaleTimeString();
-      log.innerHTML=`<div>[${time}] ${type}: ${input} → ${output}</div>`+log.innerHTML;
-    }
+    document.getElementById("encryptBtn").addEventListener("click", encrypt);
+    document.getElementById("decryptBtn").addEventListener("click", decrypt);
+
+    document.querySelectorAll(".io-group").forEach(g => {
+      g.addEventListener("animationend", () => g.classList.remove("highlight"));
+    });
   </script>
 </body>
 </html>
