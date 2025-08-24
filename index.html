@@ -24,11 +24,12 @@ label { font-weight:500;margin-bottom:6px;display:block; text-align:left; width:
 
 /* 输入输出行 */
 .input-row, .result-row { display:flex; align-items:center; gap:8px; width:100%; }
-.prefix, .prefix-out { min-width:90px; text-align:right; font-weight:600; color:#555; font-size:1em; transition: font-size 0.3s; }
+.static-text { min-width:90px; text-align:right; font-weight:600; color:#555; }
+.dynamic-prefix { min-width:60px; font-weight:700; transition: all 0.3s; }
 
-/* 点击按钮后动态前缀字体加大 */
-.prefix-large { font-size:1.4em; font-weight:700; color:#1976d2; }
-.prefix-large-decrypt { font-size:1.4em; font-weight:700; color:#f57c00; }
+/* 动态前缀样式 */
+.dynamic-encrypt { font-size:1.4em; color:#1976d2; }
+.dynamic-decrypt { font-size:1.4em; color:#f57c00; }
 
 /* 输入输出框 */
 input[type="tel"], input[type="text"] {
@@ -74,7 +75,8 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,11
 
   <div id="operationPanel" class="panel">
     <div class="input-row">
-      <span id="inputPrefix" class="prefix">输入数字：</span>
+      <span class="static-text">输入数字：</span>
+      <span id="inputDynamic" class="dynamic-prefix"></span>
       <input id="inputNum" type="tel" maxlength="4" placeholder="4位"/>
     </div>
 
@@ -84,7 +86,8 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,11
     </div>
 
     <div class="result-row">
-      <span id="outputPrefix" class="prefix-out">结果：</span>
+      <span class="static-text">结果：</span>
+      <span id="outputDynamic" class="dynamic-prefix"></span>
       <input id="outputNum" type="text" readonly />
     </div>
   </div>
@@ -93,8 +96,8 @@ input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 10px rgba(25,11
 <script>
 const input = document.getElementById('inputNum');
 const output = document.getElementById('outputNum');
-const inputPrefix = document.getElementById('inputPrefix');
-const outputPrefix = document.getElementById('outputPrefix');
+const inputDynamic = document.getElementById('inputDynamic');
+const outputDynamic = document.getElementById('outputDynamic');
 const modeIndicator = document.getElementById('modeIndicator');
 const operationPanel = document.getElementById('operationPanel');
 
@@ -112,12 +115,10 @@ document.getElementById('encryptBtn').addEventListener('click', ()=>{
   let val = input.value.trim();
   if(!/^\d{4}$/.test(val)){ alert("请输入四位数字"); return; }
   output.value = encrypt(val);
-  inputPrefix.textContent = "800880";
-  outputPrefix.textContent = "HT-";
-  inputPrefix.classList.add("prefix-large");
-  outputPrefix.classList.add("prefix-large");
-  inputPrefix.classList.remove("prefix-large-decrypt");
-  outputPrefix.classList.remove("prefix-large-decrypt");
+  inputDynamic.textContent = "800880";
+  outputDynamic.textContent = "HT-";
+  inputDynamic.className = "dynamic-prefix dynamic-encrypt";
+  outputDynamic.className = "dynamic-prefix dynamic-encrypt";
   modeIndicator.textContent = "当前模式：加密";
   modeIndicator.className = "mode-indicator mode-encrypt";
   highlight("encrypt");
@@ -127,12 +128,10 @@ document.getElementById('decryptBtn').addEventListener('click', ()=>{
   let val = input.value.trim();
   if(!/^\d{4}$/.test(val)){ alert("请输入四位数字"); return; }
   output.value = decrypt(val);
-  inputPrefix.textContent = "HT-";
-  outputPrefix.textContent = "800880";
-  inputPrefix.classList.add("prefix-large-decrypt");
-  outputPrefix.classList.add("prefix-large-decrypt");
-  inputPrefix.classList.remove("prefix-large");
-  outputPrefix.classList.remove("prefix-large");
+  inputDynamic.textContent = "HT-";
+  outputDynamic.textContent = "800880";
+  inputDynamic.className = "dynamic-prefix dynamic-decrypt";
+  outputDynamic.className = "dynamic-prefix dynamic-decrypt";
   modeIndicator.textContent = "当前模式：解密";
   modeIndicator.className = "mode-indicator mode-decrypt";
   highlight("decrypt");
