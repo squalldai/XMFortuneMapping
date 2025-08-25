@@ -3,57 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.7.1</title>
+<title>加密解密工具 v1.8.0</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center; }
-header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333; }
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f2f5;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
 
-.container { max-width:480px; margin:20px auto; padding:20px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: background 0.5s; }
+header {
+  background: linear-gradient(135deg,#ffecd2,#fcb69f);
+  height: 13vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.9rem;
+  font-weight:bold;
+  color:#333;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.container {
+  max-width:480px;
+  margin:10px auto;
+  padding:12px;
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
 
 .info-module {
-  background: rgba(240,240,240,0.6); /* 浅灰色背景+玻璃效果 */
-  backdrop-filter: blur(6px);
+  background: rgba(240,240,240,0.8);
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px;
   text-align: left;
-  font-size: 0.85rem;
+  font-size:0.82rem;
   font-style: italic;
   color: #333;
-  max-height: 4.5em; /* 默认显示四行 */
+  max-height: 4.2em;
   overflow: hidden;
   position: relative;
   transition: max-height 0.5s ease;
   margin-bottom: 12px;
 }
 .info-module.expanded { max-height: 500px; }
-.toggle-arrow { text-align:center; cursor:pointer; font-weight:bold; margin-top:4px; user-select:none; z-index:10; }
+.toggle-arrow {
+  display:block;
+  text-align:center;
+  cursor:pointer;
+  font-weight:bold;
+  margin-top:4px;
+  user-select:none;
+}
 
-h2 { margin-bottom:12px; font-size:1.2rem; color:#444; }
-.radio-group { margin:12px 0; display:flex; justify-content:center; gap:16px; }
-label { font-size:0.95rem; }
-.io-block { margin:10px 0; text-align:left; border-radius:8px; padding:6px; transition: background 0.5s; }
-.io-label { display:block; margin-bottom:6px; font-size:0.9rem; font-weight:bold; color:#555; }
-.input-row { display:flex; align-items:center; gap:6px; }
-.prefix-input { width:90px; padding:6px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; }
-input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:1rem; text-align:center; transition: background 0.5s; }
-.button-calc { width:200px; padding:12px 0; border:none; border-radius:12px; font-size:1.1rem; cursor:pointer; margin:20px 0; transition:all 0.2s, background 0.5s; color:white; }
-#log { margin-top:20px; text-align:left; font-size:0.85rem; max-height:200px; overflow-y:auto; border-top:1px solid #ddd; padding-top:10px; }
-.flash-encrypt { background-color: rgba(76,175,239,0.3); transition: background-color 0.5s; }
-.flash-decrypt { background-color: rgba(255,112,67,0.3); transition: background-color 0.5s; }
+h2 {
+  margin:10px 0;
+  font-size:1.1rem;
+  color:#444;
+}
+
+.radio-group {
+  margin:10px 0;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+}
+
+label {
+  font-size:0.88rem;
+}
+
+.io-block {
+  margin:8px 0;
+  text-align:left;
+  border-radius:8px;
+  padding:4px;
+  transition: background 0.5s;
+}
+
+.io-label {
+  display:block;
+  margin-bottom:4px;
+  font-size:0.85rem;
+  font-weight:bold;
+  color:#555;
+}
+
+.input-row {
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+.prefix-input {
+  width:85px;
+  padding:5px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  font-size:0.85rem;
+}
+
+input[type="text"] {
+  flex:1;
+  padding:6px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  font-size:0.95rem;
+  text-align:center;
+  transition: background 0.5s;
+}
+
+.button-calc {
+  width:180px;
+  padding:10px 0;
+  border:none;
+  border-radius:12px;
+  font-size:1rem;
+  cursor:pointer;
+  margin:16px 0;
+  transition:all 0.2s, background 0.5s;
+  color:white;
+}
+
+#log {
+  margin-top:12px;
+  text-align:left;
+  font-size:0.82rem;
+  max-height:200px;
+  overflow-y:auto;
+  border-top:1px solid #ddd;
+  padding-top:8px;
+}
+
+.flash-encrypt { background-color: rgba(76,175,239,0.3); }
+.flash-decrypt { background-color: rgba(255,112,67,0.3); }
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.7.1</header>
+<header>华添香精编号加密解密工具 v1.8.0</header>
 <div class="container">
 
-<!-- 可折叠说明模块 -->
+<!-- 说明模块 -->
 <div id="infoModule" class="info-module">
   <div id="infoContent">
     当前仅支持 <strong>ADM 模式</strong>。<br>
     左输入 8 位数字，前四位固定 7688，右输入 4 位数字（加密）或 6 位数字+字母（解密）。<br>
     点击 <strong>计算</strong> 完成加解密，输出左侧 HT-（加密）或 7688 开头数字（解密），右侧显示结果。<br>
     输入必须符合格式，其他模式暂不可用。<br>
-    <span class="more-text">更多说明内容可在这里添加，如限制、注意事项或使用提示...</span>
+    <span id="moreText" style="display:none;">更多说明内容可在这里添加，如限制、注意事项或使用提示等。</span>
   </div>
   <div id="toggleArrow" class="toggle-arrow">▼</div>
 </div>
@@ -70,7 +169,7 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
   <label><input type="radio" name="operation" value="decrypt"> 解密</label>
 </div>
 
-<!-- 整体计算容器 -->
+<!-- 计算容器 -->
 <div class="calc-container" id="calcContainer">
   <div class="io-block" id="inputBlock">
     <span class="io-label">输入</span>
@@ -98,13 +197,6 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 const chars='23456789ABCDEFGHJKLMNPRSTUVWXYZ';
 const key='ht1416';
 
-function seededRandom(seed){
-  let h=0;
-  for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0;
-  return function(){h^=h<<13; h^=h>>>17; h^=h<<5; return (h>>>0)/0xFFFFFFFF;};
-}
-
-// 简单可逆映射函数：Feistel风格
 function encrypt8to6(num8,key){
   let val=parseInt(num8,10);
   let out='';
@@ -196,15 +288,5 @@ document.querySelectorAll('input[name="operation"]').forEach(radio=>{
   });
 });
 
-// 可折叠说明模块
-const infoModule = document.getElementById('infoModule');
-const toggleArrow = document.getElementById('toggleArrow');
-toggleArrow.addEventListener('click', () => {
-  infoModule.classList.toggle('expanded');
-  toggleArrow.textContent = infoModule.classList.contains('expanded') ? '▲' : '▼';
-});
-
-updateButtonStyle();
-</script>
-</body>
-</html>
+// 兼容说明模块折叠
+const infoModule
