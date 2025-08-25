@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.6.3</title>
+<title>加密解密工具 v1.6.4</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center; }
 header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333; }
@@ -25,7 +25,7 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.6.3</header>
+<header>华添香精编号加密解密工具 v1.6.4</header>
 <div class="container" id="module">
 <h2>请选择模式</h2>
 <div class="radio-group">
@@ -74,7 +74,7 @@ function seededRandom(seed){
 // 可逆置换函数
 function fpeEncrypt(index,key){
   let rng=seededRandom(key+index);
-  return (index*1103515245+Math.floor(rng()*1000000))%1000000000000; // 12位空间
+  return (index*1103515245+Math.floor(rng()*1000000))%1000000000000;
 }
 function fpeDecrypt(index,key){
   let inv=178956971;
@@ -174,11 +174,13 @@ function updateIOFields(){
     if(op==='decrypt'){
       prefixInput.value='HT-';
       mainInput.value='';
+      mainInput.placeholder='输入6位数字或大写字母';
       prefixOutput.value='';
       output.value='';
     } else {
       prefixInput.value='76880800';
       mainInput.value='';
+      mainInput.placeholder='输入4位数字';
       prefixOutput.value='HT-';
       output.value='';
     }
