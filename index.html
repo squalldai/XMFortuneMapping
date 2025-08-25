@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>华添香精编号加密解密工具 v1.8.6</title>
+<title>华添香精编号加密解密工具 v1.8.7</title>
 <style>
 body {font-family: Arial,sans-serif; background:#f8f9fb; margin:0; padding:0; text-align:center;}
 header {background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333;}
@@ -27,7 +27,7 @@ button:hover {transform:scale(1.05); opacity:0.9;}
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.8.6</header>
+<header>华添香精编号加密解密工具 v1.8.7</header>
 
 <div class="container">
 <h2>说明</h2>
@@ -43,12 +43,12 @@ ADM模式：输入7688开头可编辑8位数字+右侧4位数字 → 输出6位�
 
 <h2>请选择操作</h2>
 <div class="radio-group">
-<label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
-<label><input type="radio" name="operation" value="decrypt"> 解密</label>
+<label><input type="radio" name="operation" value="encrypt" checked onchange="updateUI()"> 加密</label>
+<label><input type="radio" name="operation" value="decrypt" onchange="updateUI()"> 解密</label>
 </div>
 
-<div class="io-block">
-<span class="io-label">输入数字</span>
+<div class="io-block" id="ioContainer">
+<span class="io-label">输入</span>
 <div class="input-row">
 <input type="text" id="prefixInput" class="prefix-input" value="76880800">
 <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字">
@@ -71,7 +71,6 @@ ADM模式：输入7688开头可编辑8位数字+右侧4位数字 → 输出6位�
 </div>
 
 <script>
-// --- 可逆洗牌 + 线性映射算法 ---
 const safeChars='23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 function seededRandom(seed){
@@ -83,7 +82,6 @@ function seededRandom(seed){
     }
 }
 
-// 可逆洗牌函数
 function shuffle6(arr, seed){
     const rng=seededRandom(seed);
     let result=arr.slice();
@@ -94,13 +92,9 @@ function shuffle6(arr, seed){
     return result;
 }
 
-// 逆洗牌
 function unshuffle6(shuffled, seed){
     const rng=seededRandom(seed);
     let n=shuffled.length;
-    let indices=[];
-    for(let i=0;i<n;i++) indices.push(i);
-    // 记录每次交换序列
     let swaps=[];
     for(let i=n-1;i>0;i--){
         const j=Math.floor(rng()*(i+1));
@@ -115,80 +109,100 @@ function unshuffle6(shuffled, seed){
 }
 
 function encryptADM(prefix, main){
-    const key = prefix.slice(-4) + main;
-    const seed = 'ht1416'+key;
-    let arr=['0','1','2','3','4','5']; // 6位索引
-    let shuffled = shuffle6(arr, seed);
+    const key=prefix.slice(-4)+main;
+    const seed='ht1416'+key;
+    let arr=['0','1','2','3','4','5'];
+    let shuffled=shuffle6(arr, seed);
     let output='';
     for(let idx of shuffled){
-        let c = safeChars[(parseInt(idx)+seed.charCodeAt(0)) % safeChars.length];
+        let c=safeChars[(parseInt(idx)+seed.charCodeAt(0))%safeChars.length];
         output+=c;
     }
     return output;
 }
 
 function decryptADM(cipher, prefix){
-    const seedBase = 'ht1416';
-    let arr=['0','1','2','3','4','5'];
-    let shuffled = [];
+    const seed='ht1416'+prefix.slice(-4)+'0000';
+    let arr=[];
     for(let i=0;i<6;i++){
-        let idx = safeChars.indexOf(cipher[i]);
+        let idx=safeChars.indexOf(cipher[i]);
         if(idx<0){alert("解密字符非法！"); return "";}
-        shuffled.push(idx.toString());
+        arr.push(idx.toString());
     }
-    let unshuffled = unshuffle6(shuffled, seedBase+prefix.slice(-4)+'0000'); // 需要逆向回原key
-    // 拼接输出key
-    let main = unshuffled.slice(2).join('');
+    let unshuffled=unshuffle6(arr, seed);
+    let main=unshuffled.slice(2).join('');
     return prefix.slice(0,4)+prefix.slice(4)+main;
 }
 
-// --- UI 操作 ---
+function updateUI(){
+    const op=document.querySelector('input[name="operation"]:checked').value;
+    const prefixInput=document.getElementById('prefixInput');
+    const mainInput=document.getElementById('mainInput');
+    const outPrefix=document.getElementById('prefixOutput');
+    const outText=document.getElementById('output');
+    const btn=document.getElementById('calcButton');
+
+    if(op==='encrypt'){
+        prefixInput.value='76880800';
+        prefixInput.disabled=false;
+        mainInput.value='';
+        mainInput.maxLength=4;
+        mainInput.placeholder='输入4位数字';
+        btn.innerHTML='🔒 计算';
+        btn.classList.remove('decrypt');
+        btn.classList.add('encrypt');
+    }else{
+        prefixInput.value='HT-';
+        prefixInput.disabled=true;
+        mainInput.value='';
+        mainInput.maxLength=6;
+        mainInput.placeholder='输入6位字母数字';
+        btn.innerHTML='🔓 计算';
+        btn.classList.remove('encrypt');
+        btn.classList.add('decrypt');
+    }
+
+    outPrefix.value='HT-';
+    outText.value='';
+    document.getElementById('ioContainer').style.background='transparent';
+}
+
 function process(){
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    const operation = document.querySelector('input[name="operation"]:checked').value;
-    let prefix = document.getElementById('prefixInput').value.trim();
-    let main = document.getElementById('mainInput').value.trim();
+    const mode=document.querySelector('input[name="mode"]:checked').value;
+    const operation=document.querySelector('input[name="operation"]:checked').value;
+    let prefix=document.getElementById('prefixInput').value.trim();
+    let main=document.getElementById('mainInput').value.trim();
     let outPrefix=document.getElementById('prefixOutput');
     let outText=document.getElementById('output');
 
-    // 输入校验
-    if(!/^\d{8}$/.test(prefix) || !prefix.startsWith('7688')){
-        alert('前缀必须8位数字且以7688开头');
-        return;
-    }
-    if(operation==='encrypt' && !/^\d{4}$/.test(main)){
-        alert('右侧输入必须4位数字');
-        return;
-    }
-    if(operation==='decrypt' && !/^[2-9A-HJ-NP-Z]{6}$/.test(main)){
-        alert('右侧输入必须6位字母或数字（防呆）');
-        return;
+    if(operation==='encrypt'){
+        if(!/^\d{8}$/.test(prefix) || !prefix.startsWith('7688')){
+            alert('前缀必须8位数字且以7688开头'); return;
+        }
+        if(!/^\d{4}$/.test(main)){alert('右侧输入必须4位数字'); return;}
+    }else{
+        if(!/^[2-9A-HJ-NP-Z]{6}$/.test(main)){alert('右侧输入必须6位防呆字符'); return;}
     }
 
     let result='';
     if(mode==='ADM'){
-        if(operation==='encrypt'){
-            result=encryptADM(prefix, main);
-        } else {
-            result=decryptADM(main,prefix);
-        }
+        if(operation==='encrypt'){ result=encryptADM(prefix,main);}
+        else{ result=decryptADM(main,prefix);}
     }
 
     outPrefix.value='HT-';
     outText.value=result;
 
-    // 高亮闪烁
-    const btn = document.getElementById('calcButton');
-    const block=document.querySelector('.io-block');
-    block.classList.add('highlight');
-    btn.classList.add('highlight');
+    const btn=document.getElementById('calcButton');
+    const block=document.getElementById('ioContainer');
+    block.classList.add('highlight'); btn.classList.add('highlight');
     setTimeout(()=>{block.classList.remove('highlight'); btn.classList.remove('highlight');},300);
 
-    // 日志
     const log=document.getElementById('log');
     const time=new Date().toLocaleTimeString();
     log.innerHTML=`[${time}] 模式:${mode} 操作:${operation} 输入:${prefix}+${main} → 输出:${result}<br>`+log.innerHTML;
 }
+updateUI();
 </script>
 </body>
 </html>
