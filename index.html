@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>华添香精编号加密解密工具 v1.8.6</title>
+<title>华添香精编号加密解密工具 v1.8.7</title>
 <style>
 body{font-family:Arial,sans-serif;background:#f8f9fb;margin:0;padding:0;text-align:center;}
 header{background:linear-gradient(135deg,#ffecd2,#fcb69f);height:15vh;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:bold;color:#333;}
@@ -27,14 +27,14 @@ button:hover{transform:scale(1.05);opacity:0.9;}
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.8.6</header>
+<header>华添香精编号加密解密工具 v1.8.7</header>
 <div class="container">
 <h2>说明：ADM模式</h2>
 <div style="font-size:0.85rem;color:#555;font-style:italic;background:rgba(240,240,240,0.4);padding:6px;border-radius:6px;text-align:left;">
 1. 仅ADM模式可用。<br>
-2. 加密时输入左侧7688+4位数字，右侧输入4位数字。<br>
-3. 解密时左侧固定HT-，右侧输入6位防呆字符。<br>
-4. 输出右侧显示结果。<br>
+2. 加密：左侧7688+4位数字，右侧4位数字。<br>
+3. 解密：左侧固定HT-，右侧输入6位防呆字符。<br>
+4. 输出：右侧显示结果，解密时拆分为左8位+右4位。<br>
 </div>
 
 <h2>请选择模式</h2>
@@ -69,11 +69,9 @@ button:hover{transform:scale(1.05);opacity:0.9;}
 </div>
 
 <script>
-// --- 算法层（独立） ---
-const charTable = '23456789ABCDEFGHJKLMNPRSTUVWXYZ'; //防呆字符
+// --- 算法层（不变） ---
+const charTable = '23456789ABCDEFGHJKLMNPRSTUVWXYZ';
 const key = 'ht1416';
-
-// 洗牌生成映射
 function seededRandom(seed){
   let h=0; for(let i=0;i<seed.length;i++){h=(h*31+seed.charCodeAt(i))>>>0;}
   return function(){h^=h<<13; h^=h>>>17; h^=h<<5; return (h>>>0)/0xFFFFFFFF;};
@@ -87,31 +85,12 @@ function generatePermutation(){
   return {map,rmap};
 }
 const {map:encMap,rmap:decMap}=generatePermutation();
+function numToChars(num){let chars=''; let n=num; for(let i=0;i<6;i++){chars=charTable[n%charTable.length]+chars; n=Math.floor(n/charTable.length);} return chars;}
+function charsToNum(chars){let n=0; for(let i=0;i<chars.length;i++){n=n*charTable.length+charTable.indexOf(chars[i]);} return n;}
+function encryptADM(left8,right4){const last4=left8.slice(-4); const mapped=encMap.get(last4); const combined=parseInt(mapped+right4,10); return numToChars(combined);}
+function decryptADM(sixChars){const combined=charsToNum(sixChars).toString().padStart(8,'0'); const left4=decMap.get(combined.slice(0,4)); const right4=combined.slice(4,8); return '7688'+left4+right4;}
 
-// 数字<->防呆字符映射（6位）
-function numToChars(num){
-  let chars=''; let n=num; for(let i=0;i<6;i++){chars=charTable[n%charTable.length]+chars; n=Math.floor(n/charTable.length);}
-  return chars;
-}
-function charsToNum(chars){
-  let n=0; for(let i=0;i<chars.length;i++){n=n*charTable.length + charTable.indexOf(chars[i]);} return n;
-}
-
-// ADM 加密解密
-function encryptADM(left8,right4){
-  const last4=left8.slice(-4);
-  const mapped=encMap.get(last4);
-  const combined=parseInt(mapped+right4,10);
-  return numToChars(combined);
-}
-function decryptADM(sixChars){
-  const combined=charsToNum(sixChars).toString().padStart(8,'0');
-  const left4=decMap.get(combined.slice(0,4));
-  const right4=combined.slice(4,8);
-  return '7688'+left4+right4;
-}
-
-// --- UI层 ---
+// --- UI 层 ---
 function calculate(){
   const mode=document.querySelector('input[name="mode"]:checked').value;
   const op=document.querySelector('input[name="operation"]:checked').value;
@@ -129,10 +108,12 @@ function calculate(){
     output.value=encryptADM(left8,right);
   } else {
     if(!/^[23456789ABCDEFGHJKLMNPRSTUVWXYZ]{6}$/.test(right)){alert('右侧必须6位防呆字符');return;}
-    output.value=decryptADM(right);
+    const dec=decryptADM(right);
+    prefixOutput.value=dec.slice(0,8);
+    output.value=dec.slice(8,12);
   }
 
-  // 闪烁效果
+  // 闪烁
   const color=op==='encrypt'?'rgba(76,175,239,0.2)':'rgba(255,112,67,0.2)';
   container.style.backgroundColor=color;
   btn.style.backgroundColor=op==='encrypt'?'#4cafef':'#ff7043';
@@ -142,12 +123,11 @@ function calculate(){
   // log
   const log=document.getElementById("log");
   const time=new Date().toLocaleTimeString();
-  log.innerHTML=`[${time}] 模式:${mode} 操作:${op} 输入:${left8}+${right} → 输出:${output.value}<br>`+log.innerHTML;
+  log.innerHTML=`[${time}] 模式:${mode} 操作:${op} 输入:${left8}+${right} → 输出:${prefixOutput.value}+${output.value}<br>`+log.innerHTML;
 }
 
-// 模式切换
-const opRadios=document.querySelectorAll('input[name="operation"]');
-opRadios.forEach(r=>{
+// 切换操作时调整UI
+document.querySelectorAll('input[name="operation"]').forEach(r=>{
   r.addEventListener('change',()=>{
     const op=document.querySelector('input[name="operation"]:checked').value;
     const prefixInput=document.getElementById("prefixInput");
@@ -156,14 +136,18 @@ opRadios.forEach(r=>{
     const output=document.getElementById("output");
     if(op==='encrypt'){
       prefixInput.value='76880800'; prefixInput.disabled=false;
-      mainInput.value=''; mainInput.maxLength=4;
+      mainInput.value=''; mainInput.maxLength=4; mainInput.placeholder='4位数字';
       prefixOutput.value='HT-'; output.value='';
+      document.getElementById("calcBtn").textContent='🔒 计算';
+      document.getElementById("calcBtn").className='encrypt';
     } else {
       prefixInput.value='HT-'; prefixInput.disabled=true;
-      mainInput.value=''; mainInput.maxLength=6;
+      mainInput.value=''; mainInput.maxLength=6; mainInput.placeholder='6位防呆字符';
       prefixOutput.value=''; output.value='';
+      document.getElementById("calcBtn").textContent='🔓 计算';
+      document.getElementById("calcBtn").className='decrypt';
     }
-    document.getElementById("mainBlock").style.backgroundColor='rgba(0,0,0,0)';
+    document.getElementById("mainBlock").style.backgroundColor='transparent';
   });
 });
 </script>
