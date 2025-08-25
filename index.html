@@ -63,48 +63,43 @@
 </div>
 
 <script>
+// --- 算法保持不变 ---
 const CHAR_TABLE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32字符防呆
 const KEY = 'ht1416';
-
-// 简单可逆算法: 左后4位 + 右4位映射到6位字符
-function encrypt6(left4, right4) {
-  const num = parseInt(left4 + right4,10);
-  let chars = '';
-  let tmp = num;
-  for(let i=0;i<6;i++){
-    chars = CHAR_TABLE[tmp % CHAR_TABLE.length] + chars;
-    tmp = Math.floor(tmp / CHAR_TABLE.length);
-  }
+function encrypt6(left4, right4){
+  const num=parseInt(left4+right4,10);
+  let chars='';
+  let tmp=num;
+  for(let i=0;i<6;i++){chars=CHAR_TABLE[tmp%CHAR_TABLE.length]+chars; tmp=Math.floor(tmp/CHAR_TABLE.length);}
   return chars;
 }
-
-// 解密
-function decrypt6(chars) {
-  let num = 0;
-  for(let i=0;i<chars.length;i++){
-    num = num * CHAR_TABLE.length + CHAR_TABLE.indexOf(chars[i]);
-  }
-  const str = num.toString().padStart(8,'0');
-  const left4 = str.slice(0,4);
-  const right4 = str.slice(4,8);
+function decrypt6(chars){
+  let num=0;
+  for(let i=0;i<chars.length;i++){num=num*CHAR_TABLE.length+CHAR_TABLE.indexOf(chars[i]);}
+  const str=num.toString().padStart(8,'0');
+  const left4=str.slice(0,4);
+  const right4=str.slice(4,8);
   return {left4,right4};
 }
 
+// --- UI 逻辑严格按照 1.8.7 ---
 function resetUIForMode(mode){
-  const mainInput = document.getElementById('mainInput');
-  const prefixInput = document.getElementById('prefixInput');
-  const prefixOutput = document.getElementById('prefixOutput');
-  const output = document.getElementById('output');
+  const mainInput=document.getElementById('mainInput');
+  const prefixInput=document.getElementById('prefixInput');
+  const prefixOutput=document.getElementById('prefixOutput');
+  const output=document.getElementById('output');
   if(mode==='decrypt'){
     prefixInput.value='HT-';
+    prefixInput.readOnly=true;
     mainInput.value='';
     mainInput.maxLength=6;
     output.value='';
     prefixOutput.value='';
     document.getElementById('computeBtn').innerText='🔓 计算';
     document.getElementById('computeBtn').className='decrypt';
-  } else {
+  }else{
     prefixInput.value='76880800';
+    prefixInput.readOnly=false;
     mainInput.value='';
     mainInput.maxLength=4;
     output.value='';
@@ -116,50 +111,44 @@ function resetUIForMode(mode){
 
 document.querySelectorAll('input[name="operation"]').forEach(r=>{
   r.addEventListener('change',()=>{
-    const op = document.querySelector('input[name="operation"]:checked').value;
+    const op=document.querySelector('input[name="operation"]:checked').value;
     resetUIForMode(op);
   });
 });
 
 function flashContainer(color){
-  const container = document.querySelector('.container');
+  const container=document.querySelector('.container');
   container.style.transition='background 0.3s';
   container.style.background=color;
-  setTimeout(()=>{container.style.background='#fff'},300);
+  setTimeout(()=>{container.style.background='#fff';},300);
 }
 
 function process(){
-  const mode = document.querySelector('input[name="operation"]:checked').value;
-  const left4input = document.getElementById('prefixInput').value.trim();
-  const mainInput = document.getElementById('mainInput').value.trim();
-  const output = document.getElementById('output');
-  const prefixOutput = document.getElementById('prefixOutput');
+  const mode=document.querySelector('input[name="operation"]:checked').value;
+  const leftInput=document.getElementById('prefixInput').value.trim();
+  const mainInput=document.getElementById('mainInput').value.trim();
+  const output=document.getElementById('output');
+  const prefixOutput=document.getElementById('prefixOutput');
 
   if(mode==='encrypt'){
-    if(!/^\d{4}$/.test(mainInput)){
-      alert('请输入4位数字');
-      return;
-    }
-    const left4 = left4input.slice(-4);
-    const right4 = mainInput;
-    const cipher = encrypt6(left4,right4);
-    output.value = cipher;
+    if(!/^\d{4}$/.test(mainInput)){alert('请输入4位数字'); return;}
+    const left4=leftInput.slice(-4);
+    const right4=mainInput;
+    const cipher=encrypt6(left4,right4);
+    output.value=cipher;
     prefixOutput.value='HT-';
-    flashContainer('rgba(76,175,239,0.2)'); // 蓝色半透明闪烁
+    flashContainer('rgba(76,175,239,0.2)');
   } else {
-    if(!/^[A-Z2-9]{6}$/.test(mainInput)){
-      alert('请输入6位字母数字组合');
-      return;
-    }
-    const res = decrypt6(mainInput);
-    output.value = res.left4+res.right4.slice(0,4);
-    prefixOutput.value=res.right4.slice(4,8);
-    flashContainer('rgba(255,112,67,0.2)'); // 橙色半透明闪烁
+    if(!/^[A-Z2-9]{6}$/.test(mainInput)){alert('请输入6位字母数字组合'); return;}
+    const res=decrypt6(mainInput);
+    output.value=res.left4+res.right4;
+    prefixOutput.value=res.right4;
+    flashContainer('rgba(255,112,67,0.2)');
   }
 
-  const log = document.getElementById('log');
-  const time = new Date().toLocaleTimeString();
-  log.innerHTML=`[${time}] 模式:${mode} 输入:${left4input}+${mainInput} → 输出:${prefixOutput.value}${output.value}` + log.innerHTML;
+  const log=document.getElementById('log');
+  const time=new Date().toLocaleTimeString();
+  log.innerHTML=`[${time}] 模式:${mode} 输入:${leftInput}+${mainInput} → 输出:${prefixOutput.value}${output.value}` + log.innerHTML;
 }
 </script>
 </body>
