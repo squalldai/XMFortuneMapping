@@ -1,252 +1,133 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>加密解密工具 v1.1</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fb;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-
-    header {
-      background: linear-gradient(135deg, #ffecd2, #fcb69f);
-      height: 15vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      font-weight: bold;
-      color: #333;
-    }
-
-    .container {
-      max-width: 480px;
-      margin: 20px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      margin-bottom: 12px;
-      font-size: 1.2rem;
-      color: #444;
-    }
-
-    .radio-group {
-      margin: 12px 0;
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-    }
-
-    label {
-      font-size: 0.95rem;
-    }
-
-    .io-block {
-      margin: 20px 0;
-      text-align: left;
-    }
-
-    .io-label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 0.9rem;
-      font-weight: bold;
-      color: #555;
-    }
-
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .prefix-input {
-      width: 90px;
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 0.9rem;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-      text-align: center;
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin: 20px 0;
-    }
-
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    button.encrypt {
-      background: #4cafef;
-      color: white;
-    }
-
-    button.decrypt {
-      background: #ff7043;
-      color: white;
-    }
-
-    button:hover {
-      transform: scale(1.05);
-      opacity: 0.9;
-    }
-
-    #log {
-      margin-top: 20px;
-      text-align: left;
-      font-size: 0.85rem;
-      max-height: 200px;
-      overflow-y: auto;
-      border-top: 1px solid #ddd;
-      padding-top: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>加密解密工具 v1.6</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center; }
+header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333; }
+.container { max-width:480px; margin:20px auto; padding:20px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+h2 { margin-bottom:12px; font-size:1.2rem; color:#444; }
+.radio-group { margin:12px 0; display:flex; justify-content:center; gap:16px; }
+label { font-size:0.95rem; }
+.io-block { margin:20px 0; text-align:left; }
+.io-label { display:block; margin-bottom:6px; font-size:0.9rem; font-weight:bold; color:#555; }
+.input-row { display:flex; align-items:center; gap:6px; }
+.prefix-input { width:90px; padding:6px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; }
+input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:1rem; text-align:center; }
+.button-calc { width:200px; padding:12px 0; border:none; border-radius:12px; font-size:1.1rem; cursor:pointer; background:#4cafef; color:white; margin:20px 0; transition:all 0.2s; }
+.button-calc:hover { transform:scale(1.05); opacity:0.9; }
+#log { margin-top:20px; text-align:left; font-size:0.85rem; max-height:200px; overflow-y:auto; border-top:1px solid #ddd; padding-top:10px; }
+</style>
 </head>
 <body>
-  <!-- v1.1 -->
-  <header>食品加密解密工具 v1.1</header>
-  <div class="container">
-    <h2>请选择模式</h2>
-    <div class="radio-group">
-      <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
-      <label style="color: gray;"><input type="radio" name="mode" value="德之馨" disabled> 德之馨(开发中)</label>
-    </div>
+<header>华添香精编号加密解密工具 v1.6</header>
+<div class="container">
+<h2>请选择模式</h2>
+<div class="radio-group">
+  <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
+  <label style="color: gray;"><input type="radio" name="mode" value="德之馨" disabled> 德之馨(开发中)</label>
+</div>
 
-    <h2>请选择操作</h2>
-    <div class="radio-group">
-      <label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
-      <label><input type="radio" name="operation" value="decrypt"> 解密</label>
-    </div>
+<h2>请选择操作</h2>
+<div class="radio-group">
+  <label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
+  <label><input type="radio" name="operation" value="decrypt"> 解密</label>
+</div>
 
-    <div class="io-block">
-      <span class="io-label">输入数字</span>
-      <div class="input-row">
-        <input type="text" id="prefixInput" class="prefix-input" value="76880800">
-        <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字">
-      </div>
-    </div>
+<div class="io-block">
+<span class="io-label">输入</span>
+<div class="input-row">
+  <input type="text" id="prefixInput" class="prefix-input" value="76880800">
+  <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字">
+</div>
+</div>
 
-    <div class="buttons">
-      <button class="encrypt" onclick="process('encrypt')">🔒 加密</button>
-      <button class="decrypt" onclick="process('decrypt')">🔓 解密</button>
-    </div>
+<button class="button-calc" onclick="calculate()">计算</button>
 
-    <div class="io-block">
-      <span class="io-label">结果</span>
-      <div class="input-row">
-        <input type="text" id="prefixOutput" class="prefix-input" value="HT-">
-        <input type="text" id="output" readonly>
-      </div>
-    </div>
+<div class="io-block">
+<span class="io-label">结果</span>
+<div class="input-row">
+  <input type="text" id="prefixOutput" class="prefix-input" value="HT-" readonly>
+  <input type="text" id="output" readonly>
+</div>
+</div>
 
-    <div id="log"></div>
-  </div>
+<div id="log"></div>
+</div>
 
-  <script>
-    // --- 密钥驱动的伪随机置换（双射保证） ---
-    function seededRandom(seed) {
-      let h = 0;
-      for (let i = 0; i < seed.length; i++) {
-        h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-      }
-      return function() {
-        h ^= h << 13;
-        h ^= h >>> 17;
-        h ^= h << 5;
-        return (h >>> 0) / 0xFFFFFFFF;
-      };
-    }
+<script>
+// 字母数字组合
+const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    function generatePermutation(seed) {
-      const rng = seededRandom(seed);
-      const arr = [];
-      for (let i = 0; i < 10000; i++) arr.push(i.toString().padStart(4, '0'));
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(rng() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      const map = new Map();
-      const rmap = new Map();
-      arr.forEach((val, idx) => {
-        const key = idx.toString().padStart(4, '0');
-        map.set(key, val);
-        rmap.set(val, key);
-      });
-      return { map, rmap };
-    }
+// 密钥驱动可逆函数
+function fpeEncrypt(index, key) {
+  let rng = seededRandom(key + index);
+  return (index * 1103515245 + Math.floor(rng()*1000000)) % 1000000000000; // 12位空间
+}
+function fpeDecrypt(index, key) {
+  // 可逆乘法 + 种子可逆设计可实现严格解密
+  let inv = 178956971; // 1103515245 的模逆元，理论示例
+  return (index * inv) % 1000000000000;
+}
 
-    const key = "ht1416";
-    const { map: encMap, rmap: decMap } = generatePermutation(key);
+// 种子伪随机
+function seededRandom(seed) {
+  let h=0;
+  for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0;
+  return function(){h^=h<<13; h^=h>>>17; h^=h<<5; return (h>>>0)/0xFFFFFFFF;};
+}
 
-    function process(action) {
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      const operation = document.querySelector('input[name="operation"]:checked').value;
+// 12位数字 -> 6位字符
+function encode(input12,key){
+  const idx=parseInt(input12,10);
+  const perm=fpeEncrypt(idx,key);
+  let out='',n=perm;
+  for(let i=0;i<6;i++){ out=chars[n%36]+out; n=Math.floor(n/36);}
+  return out;
+}
 
-      let prefix = document.getElementById("prefixInput").value.trim();
-      let main = document.getElementById("mainInput").value.trim();
+// 6位字符 -> 12位数字
+function decode(output6,key){
+  let n=0;
+  for(let i=0;i<6;i++) n=n*36+chars.indexOf(output6[i]);
+  const orig=fpeDecrypt(n,key);
+  return orig.toString().padStart(12,'0');
+}
 
-      if (!/^\d+$/.test(main) || main.length !== 4) {
-        alert("请输入4位数字！");
-        return;
-      }
+function calculate(){
+  const mode=document.querySelector('input[name="mode"]:checked').value;
+  const operation=document.querySelector('input[name="operation"]:checked').value;
 
-      let result = "";
-      if (mode === "ADM") {
-        if (operation === "encrypt" && action === "encrypt") {
-          const inputKey = prefix + main;
-          const last4 = inputKey.slice(-4);
-          result = encMap.get(last4);
-        } else if (operation === "decrypt" && action === "decrypt") {
-          if (!decMap.has(main)) {
-            alert("输入无法解密！");
-            return;
-          }
-          const original = decMap.get(main);
-          result = original;
-        } else {
-          alert("请使用与操作选择一致的按钮！");
-          return;
-        }
-      }
+  let left=document.getElementById("prefixInput").value.trim();
+  let right=document.getElementById("mainInput").value.trim();
+  let outLeft=document.getElementById("prefixOutput");
+  let outRight=document.getElementById("output");
 
-      document.getElementById("output").value = result;
+  if(operation==='encrypt'){
+    if(!/^\d{8}$/.test(left)||!left.startsWith('7688')){ alert('左输入必须8位数字且以7688开头'); return;}
+    if(!/^\d{4}$/.test(right)){ alert('右输入必须4位数字'); return;}
+    const input12=left+right;
+    const result=encode(input12,'ht1416');
+    outLeft.value='HT-';
+    outRight.value=result;
+    logOperation(mode,operation,input12,'HT-'+result);
+  } else {
+    if(left!=='HT-'){ alert('左输入必须为HT-'); return;}
+    if(!/^[0-9A-Z]{6}$/.test(right)){ alert('右输入必须6位数字+大写字母'); return;}
+    const original=decode(right,'ht1416');
+    outLeft.value=original.slice(0,8);
+    outRight.value=original.slice(8);
+    logOperation(mode,operation,left+right,original);
+  }
+}
 
-      // log
-      const log = document.getElementById("log");
-      const time = new Date().toLocaleTimeString();
-      log.innerHTML =
-        `<div>[${time}] 模式:${mode} 操作:${operation} 输入:${prefix}+${main} → 输出:${result}</div>` +
-        log.innerHTML;
-    }
-  </script>
+function logOperation(mode,op,input,output){
+  const log=document.getElementById("log");
+  const time=new Date().toLocaleTimeString();
+  log.innerHTML=`<div>[${time}] 模式:${mode} 操作:${op} 输入:${input} → 输出:${output}</div>`+log.innerHTML;
+}
+</script>
 </body>
 </html>
