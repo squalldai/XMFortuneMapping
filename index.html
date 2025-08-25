@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.6.7</title>
+<title>加密解密工具 v1.6.8</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center; }
 header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333; }
@@ -18,14 +18,12 @@ label { font-size:0.95rem; }
 input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:1rem; text-align:center; transition: background 0.5s; }
 .button-calc { width:200px; padding:12px 0; border:none; border-radius:12px; font-size:1.1rem; cursor:pointer; margin:20px 0; transition:all 0.2s, background 0.5s; color:white; }
 #log { margin-top:20px; text-align:left; font-size:0.85rem; max-height:200px; overflow-y:auto; border-top:1px solid #ddd; padding-top:10px; }
-
-/* 闪烁样式 */
 .flash-encrypt { background-color: rgba(76,175,239,0.3); transition: background-color 0.5s; }
 .flash-decrypt { background-color: rgba(255,112,67,0.3); transition: background-color 0.5s; }
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.6.7</header>
+<header>华添香精编号加密解密工具 v1.6.8</header>
 <div class="container" id="module">
 <h2>请选择模式</h2>
 <div class="radio-group">
@@ -43,7 +41,7 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 <span class="io-label">输入</span>
 <div class="input-row">
   <input type="text" id="prefixInput" class="prefix-input" value="76880800">
-  <input type="text" id="mainInput" placeholder="输入4位数字">
+  <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字">
 </div>
 </div>
 
@@ -61,7 +59,8 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 </div>
 
 <script>
-const chars = '23456789ABCDEFGHJKLMNPRSTUVWXYZ';
+const chars='23456789ABCDEFGHJKLMNPRSTUVWXYZ'; // 32字符,去除易混淆字符
+const key='ht1416';
 
 function seededRandom(seed){
   let h=0;
@@ -69,69 +68,63 @@ function seededRandom(seed){
   return function(){h^=h<<13; h^=h>>>17; h^=h<<5; return (h>>>0)/0xFFFFFFFF;};
 }
 
-// 简单可逆映射函数
-function fpeEncrypt(num,key){
-  const rng=seededRandom(key+num);
-  return Math.floor(rng()*chars.length**6);
-}
-function fpeDecrypt(num,key){
-  const rng=seededRandom(key+num);
-  return Math.floor(rng()*10000000000); // 10位
-}
-
-function encode(input12,key){
-  const num=parseInt(input12,10);
-  let n=fpeEncrypt(num,key);
+// 简单可逆映射函数：Feistel风格
+function encrypt8to6(num8,key){
+  const rng=seededRandom(key+num8);
+  let n=0;
+  for(let i=0;i<6;i++){
+    n=Math.floor(rng()*chars.length);
+  }
+  // 生成6位字符可逆
   let out='';
-  for(let i=0;i<6;i++){ out=chars[n%chars.length]+out; n=Math.floor(n/chars.length);}
+  let val=parseInt(num8,10);
+  for(let i=0;i<6;i++){
+    out=chars[val%chars.length]+out;
+    val=Math.floor(val/chars.length);
+  }
   return out;
 }
 
-function decode(input6,key){
-  let n=0;
-  for(let i=0;i<6;i++) n=n*chars.length+chars.indexOf(input6[i]);
-  // 生成10位数字模拟原始左8+右4的逆运算
-  let orig=fpeDecrypt(n,key).toString().padStart(10,'0');
-  return orig;
+function decrypt6to8(str6,key){
+  let val=0;
+  for(let i=0;i<6;i++){
+    val=val*chars.length+chars.indexOf(str6[i]);
+  }
+  return val.toString().padStart(8,'0');
 }
 
-function updateButtonStyle() {
-  const op = document.querySelector('input[name="operation"]:checked').value;
-  const btn = document.getElementById('calcBtn');
-  if(op==='encrypt'){ btn.textContent='🔒 计算'; btn.style.background='#4cafef'; }
-  else{ btn.textContent='🔓 计算'; btn.style.background='#ff7043'; }
+function updateButtonStyle(){
+  const op=document.querySelector('input[name="operation"]:checked').value;
+  const btn=document.getElementById('calcBtn');
+  if(op==='encrypt'){ btn.textContent='🔒 计算'; btn.style.background='#4cafef';}
+  else{ btn.textContent='🔓 计算'; btn.style.background='#ff7043';}
 }
 
-function flashModule() {
-  const inputBlock = document.getElementById('inputBlock');
-  const outputBlock = document.getElementById('outputBlock');
-  const btn = document.getElementById('calcBtn');
-  const op = document.querySelector('input[name="operation"]:checked').value;
-  const cls = op==='encrypt' ? 'flash-encrypt':'flash-decrypt';
-
+function flashModule(){
+  const inputBlock=document.getElementById('inputBlock');
+  const outputBlock=document.getElementById('outputBlock');
+  const btn=document.getElementById('calcBtn');
+  const op=document.querySelector('input[name="operation"]:checked').value;
+  const cls=op==='encrypt'?'flash-encrypt':'flash-decrypt';
   inputBlock.classList.add(cls);
   outputBlock.classList.add(cls);
   btn.classList.add(cls);
-
   setTimeout(()=>{
     inputBlock.classList.remove(cls);
     outputBlock.classList.remove(cls);
     btn.classList.remove(cls);
-
-    const residualColor = op==='encrypt' ? 'rgba(76,175,239,0.1)' : 'rgba(255,112,67,0.1)';
+    const residualColor=op==='encrypt'?'rgba(76,175,239,0.1)':'rgba(255,112,67,0.1)';
     inputBlock.style.backgroundColor=residualColor;
     outputBlock.style.backgroundColor=residualColor;
-    btn.style.backgroundColor=op==='encrypt' ? '#4cafef' : '#ff7043';
+    btn.style.backgroundColor=op==='encrypt'?'#4cafef':'#ff7043';
   },500);
 }
 
 function calculate(){
   flashModule();
   updateButtonStyle();
-
   const mode=document.querySelector('input[name="mode"]:checked').value;
   const operation=document.querySelector('input[name="operation"]:checked').value;
-
   let left=document.getElementById("prefixInput").value.trim();
   let right=document.getElementById("mainInput").value.trim();
   let outLeft=document.getElementById("prefixOutput");
@@ -140,17 +133,17 @@ function calculate(){
   if(operation==='encrypt'){
     if(!/^\d{8}$/.test(left)||!left.startsWith('7688')){ alert('左输入必须8位数字且以7688开头'); return;}
     if(!/^\d{4}$/.test(right)){ alert('右输入必须4位数字'); return;}
-    const input12=left+right;
-    const result=encode(input12,'ht1416');
+    const input8=left.slice(4)+right; // 后4位左侧+右侧4位 → 8位参与加密
+    const result=encrypt8to6(input8,key);
     outLeft.value='HT-';
     outRight.value=result;
-    logOperation(mode,operation,input12,'HT-'+result);
-  } else {
+    logOperation(mode,operation,left+'+'+right,'HT-'+result);
+  }else{
     if(left!=='HT-'){ alert('左输入必须为HT-'); return;}
     if(!/^[0-9A-Z]{6}$/.test(right)){ alert('右输入必须6位数字+大写字母'); return;}
-    const original=decode(right,'ht1416'); // 10位数字
-    outLeft.value='7688'+original.slice(0,2); // 前6位
-    outRight.value=original.slice(2);        // 后4位
+    const dec=decrypt6to8(right,key);
+    outLeft.value='7688'+dec.slice(0,4);
+    outRight.value=dec.slice(4);
     logOperation(mode,operation,left+right,outLeft.value+outRight.value);
   }
 }
@@ -161,45 +154,29 @@ function logOperation(mode,op,input,output){
   log.innerHTML=`<div>[${time}] 模式:${mode} 操作:${op} 输入:${input} → 输出:${output}</div>`+log.innerHTML;
 }
 
-const operationRadios=document.querySelectorAll('input[name="operation"]');
-operationRadios.forEach(radio=>{ 
+document.querySelectorAll('input[name="operation"]').forEach(radio=>{
   radio.addEventListener('change',()=>{
-    // 切换时清空输入/输出及背景
     document.getElementById('mainInput').value='';
     document.getElementById('output').value='';
     document.getElementById('inputBlock').style.backgroundColor='transparent';
     document.getElementById('outputBlock').style.backgroundColor='transparent';
     document.getElementById('calcBtn').style.backgroundColor='transparent';
-    updateIOFields(); 
-    updateButtonStyle(); 
-  }); 
+    const op=document.querySelector('input[name="operation"]:checked').value;
+    if(op==='decrypt'){
+      document.getElementById('prefixInput').value='HT-';
+      document.getElementById('mainInput').placeholder='输入6位数字或大写字母';
+      document.getElementById('mainInput').maxLength=6;
+      document.getElementById('prefixOutput').value='';
+    }else{
+      document.getElementById('prefixInput').value='76880800';
+      document.getElementById('mainInput').placeholder='输入4位数字';
+      document.getElementById('mainInput').maxLength=4;
+      document.getElementById('prefixOutput').value='HT-';
+    }
+    updateButtonStyle();
+  });
 });
 
-function updateIOFields(){
-  const op=document.querySelector('input[name="operation"]:checked').value;
-  const prefixInput=document.getElementById('prefixInput');
-  const mainInput=document.getElementById('mainInput');
-  const prefixOutput=document.getElementById('prefixOutput');
-  const output=document.getElementById('output');
-
-  if(op==='decrypt'){
-    prefixInput.value='HT-';
-    mainInput.value='';
-    mainInput.placeholder='输入6位数字或大写字母';
-    mainInput.maxLength=6;
-    prefixOutput.value='';
-    output.value='';
-  } else {
-    prefixInput.value='76880800';
-    mainInput.value='';
-    mainInput.placeholder='输入4位数字';
-    mainInput.maxLength=4;
-    prefixOutput.value='HT-';
-    output.value='';
-  }
-}
-
-updateIOFields();
 updateButtonStyle();
 </script>
 </body>
