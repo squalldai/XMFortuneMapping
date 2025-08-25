@@ -3,130 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.8.0</title>
+<title>加密解密工具 v1.8.2</title>
 <style>
 body {
   font-family: Arial, sans-serif;
   background: #f0f2f5;
-  margin: 0;
-  padding: 0;
-  text-align: center;
+  margin:0;
+  padding:0;
+  text-align:center;
 }
-
 header {
   background: linear-gradient(135deg,#ffecd2,#fcb69f);
-  height: 13vh;
+  height:12vh;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:1.9rem;
+  font-size:1.95rem;
   font-weight:bold;
   color:#333;
   box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
-
 .container {
   max-width:480px;
   margin:10px auto;
-  padding:12px;
+  padding:12px 16px;
   background:#fff;
   border-radius:16px;
   box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
-
 .info-module {
   background: rgba(240,240,240,0.8);
   border-radius: 12px;
-  padding: 10px;
-  text-align: left;
-  font-size:0.82rem;
+  padding: 12px;
+  text-align:left;
+  font-size:0.85rem;
   font-style: italic;
   color: #333;
-  max-height: 4.2em;
-  overflow: hidden;
-  position: relative;
-  transition: max-height 0.5s ease;
   margin-bottom: 12px;
 }
-.info-module.expanded { max-height: 500px; }
-.toggle-arrow {
-  display:block;
-  text-align:center;
-  cursor:pointer;
-  font-weight:bold;
-  margin-top:4px;
-  user-select:none;
-}
-
 h2 {
   margin:10px 0;
   font-size:1.1rem;
   color:#444;
 }
-
 .radio-group {
-  margin:10px 0;
+  margin:8px 0;
   display:flex;
   justify-content:center;
   gap:12px;
 }
-
 label {
-  font-size:0.88rem;
+  font-size:0.9rem;
 }
-
 .io-block {
   margin:8px 0;
   text-align:left;
   border-radius:8px;
-  padding:4px;
+  padding:6px;
   transition: background 0.5s;
 }
-
 .io-label {
   display:block;
   margin-bottom:4px;
-  font-size:0.85rem;
+  font-size:0.88rem;
   font-weight:bold;
   color:#555;
 }
-
 .input-row {
   display:flex;
   align-items:center;
-  gap:4px;
+  gap:6px;
 }
-
 .prefix-input {
-  width:85px;
-  padding:5px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:0.85rem;
-}
-
-input[type="text"] {
-  flex:1;
+  width:95px;
   padding:6px;
   border:1px solid #ccc;
   border-radius:6px;
-  font-size:0.95rem;
+  font-size:0.88rem;
+}
+input[type="text"] {
+  flex:1;
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  font-size:1rem;
   text-align:center;
   transition: background 0.5s;
 }
-
 .button-calc {
-  width:180px;
-  padding:10px 0;
+  width:200px;
+  padding:12px 0;
   border:none;
   border-radius:12px;
-  font-size:1rem;
+  font-size:1.05rem;
   cursor:pointer;
   margin:16px 0;
   transition:all 0.2s, background 0.5s;
   color:white;
 }
-
 #log {
   margin-top:12px;
   text-align:left;
@@ -136,25 +110,21 @@ input[type="text"] {
   border-top:1px solid #ddd;
   padding-top:8px;
 }
-
 .flash-encrypt { background-color: rgba(76,175,239,0.3); }
 .flash-decrypt { background-color: rgba(255,112,67,0.3); }
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.8.0</header>
+<header>华添香精编号加密解密工具 v1.8.2</header>
 <div class="container">
 
 <!-- 说明模块 -->
-<div id="infoModule" class="info-module">
-  <div id="infoContent">
-    当前仅支持 <strong>ADM 模式</strong>。<br>
-    左输入 8 位数字，前四位固定 7688，右输入 4 位数字（加密）或 6 位数字+字母（解密）。<br>
-    点击 <strong>计算</strong> 完成加解密，输出左侧 HT-（加密）或 7688 开头数字（解密），右侧显示结果。<br>
-    输入必须符合格式，其他模式暂不可用。<br>
-    <span id="moreText" style="display:none;">更多说明内容可在这里添加，如限制、注意事项或使用提示等。</span>
-  </div>
-  <div id="toggleArrow" class="toggle-arrow">▼</div>
+<div class="info-module">
+  当前仅支持 <strong>ADM 模式</strong>。<br>
+  左输入 8 位数字，前四位固定 7688，右输入 4 位数字（加密）或 6 位数字+字母（解密）。<br>
+  点击 <strong>计算</strong> 完成加解密，输出左侧 HT-（加密）或 7688 开头数字（解密），右侧显示结果。<br>
+  输入必须符合格式，其他模式暂不可用。<br>
+  可根据需要调整输入，注意防呆设计避免误认字符。
 </div>
 
 <h2>请选择模式</h2>
@@ -288,5 +258,7 @@ document.querySelectorAll('input[name="operation"]').forEach(radio=>{
   });
 });
 
-// 兼容说明模块折叠
-const infoModule
+updateButtonStyle();
+</script>
+</body>
+</html>
