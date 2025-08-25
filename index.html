@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.7</title>
+<title>加密解密工具 v1.7.1</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center; }
 header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333; }
@@ -11,21 +11,22 @@ header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; displ
 .container { max-width:480px; margin:20px auto; padding:20px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: background 0.5s; }
 
 .info-module {
-  background: rgba(255,255,255,0.2);
+  background: rgba(240,240,240,0.6); /* 浅灰色背景+玻璃效果 */
   backdrop-filter: blur(6px);
   border-radius: 12px;
   padding: 12px;
   text-align: left;
   font-size: 0.85rem;
+  font-style: italic;
   color: #333;
-  max-height: 4.5em;
+  max-height: 4.5em; /* 默认显示四行 */
   overflow: hidden;
   position: relative;
   transition: max-height 0.5s ease;
   margin-bottom: 12px;
 }
 .info-module.expanded { max-height: 500px; }
-.toggle-arrow { text-align:center; cursor:pointer; font-weight:bold; margin-top:4px; user-select:none; }
+.toggle-arrow { text-align:center; cursor:pointer; font-weight:bold; margin-top:4px; user-select:none; z-index:10; }
 
 h2 { margin-bottom:12px; font-size:1.2rem; color:#444; }
 .radio-group { margin:12px 0; display:flex; justify-content:center; gap:16px; }
@@ -42,7 +43,7 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.7</header>
+<header>华添香精编号加密解密工具 v1.7.1</header>
 <div class="container">
 
 <!-- 可折叠说明模块 -->
