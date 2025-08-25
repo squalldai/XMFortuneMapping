@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.6.4</title>
+<title>加密解密工具 v1.6.6</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center; }
 header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333; }
@@ -11,7 +11,7 @@ header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; displ
 h2 { margin-bottom:12px; font-size:1.2rem; color:#444; }
 .radio-group { margin:12px 0; display:flex; justify-content:center; gap:16px; }
 label { font-size:0.95rem; }
-.io-block { margin:20px 0; text-align:left; transition: background 0.5s; }
+.io-block { margin:20px 0; text-align:left; transition: background 0.5s; border-radius:8px; padding:6px; }
 .io-label { display:block; margin-bottom:6px; font-size:0.9rem; font-weight:bold; color:#555; }
 .input-row { display:flex; align-items:center; gap:6px; }
 .prefix-input { width:90px; padding:6px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; }
@@ -20,12 +20,12 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 #log { margin-top:20px; text-align:left; font-size:0.85rem; max-height:200px; overflow-y:auto; border-top:1px solid #ddd; padding-top:10px; }
 
 /* 闪烁样式 */
-.flash-encrypt { background-color: rgba(76,175,239,0.3); }
-.flash-decrypt { background-color: rgba(255,112,67,0.3); }
+.flash-encrypt { background-color: rgba(76,175,239,0.3); transition: background-color 0.5s; }
+.flash-decrypt { background-color: rgba(255,112,67,0.3); transition: background-color 0.5s; }
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.6.4</header>
+<header>华添香精编号加密解密工具 v1.6.6</header>
 <div class="container" id="module">
 <h2>请选择模式</h2>
 <div class="radio-group">
@@ -43,7 +43,7 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 <span class="io-label">输入</span>
 <div class="input-row">
   <input type="text" id="prefixInput" class="prefix-input" value="76880800">
-  <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字">
+  <input type="text" id="mainInput" placeholder="输入4位数字">
 </div>
 </div>
 
@@ -61,27 +61,17 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 </div>
 
 <script>
-// 安全字符集（车牌防呆设计）
 const chars = '23456789ABCDEFGHJKLMNPRSTUVWXYZ';
 
-// 种子伪随机
 function seededRandom(seed){
   let h=0;
   for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0;
   return function(){h^=h<<13; h^=h>>>17; h^=h<<5; return (h>>>0)/0xFFFFFFFF;};
 }
 
-// 可逆置换函数
-function fpeEncrypt(index,key){
-  let rng=seededRandom(key+index);
-  return (index*1103515245+Math.floor(rng()*1000000))%1000000000000;
-}
-function fpeDecrypt(index,key){
-  let inv=178956971;
-  return (index*inv)%1000000000000;
-}
+function fpeEncrypt(index,key){ let rng=seededRandom(key+index); return (index*1103515245+Math.floor(rng()*1000000))%1000000000000; }
+function fpeDecrypt(index,key){ let inv=178956971; return (index*inv)%1000000000000; }
 
-// 12位数字 -> 6位安全字符
 function encode(input12,key){
   const idx=parseInt(input12,10);
   const perm=fpeEncrypt(idx,key);
@@ -90,7 +80,6 @@ function encode(input12,key){
   return out;
 }
 
-// 6位安全字符 -> 12位数字
 function decode(output6,key){
   let n=0;
   for(let i=0;i<6;i++) n=n*chars.length+chars.indexOf(output6[i]);
@@ -98,33 +87,40 @@ function decode(output6,key){
   return orig.toString().padStart(12,'0');
 }
 
-// 更新按钮图标和颜色
 function updateButtonStyle() {
   const op = document.querySelector('input[name="operation"]:checked').value;
   const btn = document.getElementById('calcBtn');
-  if(op==='encrypt'){
-    btn.textContent='🔒 计算';
-    btn.style.background='#4cafef';
-  } else {
-    btn.textContent='🔓 计算';
-    btn.style.background='#ff7043';
-  }
+  if(op==='encrypt'){ btn.textContent='🔒 计算'; btn.style.background='#4cafef'; }
+  else{ btn.textContent='🔓 计算'; btn.style.background='#ff7043'; }
 }
 
-// 点击计算按钮时闪烁模块
 function flashModule() {
-  const module = document.getElementById('module');
+  const inputBlock = document.getElementById('inputBlock');
+  const outputBlock = document.getElementById('outputBlock');
+  const btn = document.getElementById('calcBtn');
   const op = document.querySelector('input[name="operation"]:checked').value;
-  const cls = op==='encrypt'?'flash-encrypt':'flash-decrypt';
-  module.classList.add(cls);
-  setTimeout(()=>{ module.classList.remove(cls); module.style.background='#fff'; },500);
+  const cls = op==='encrypt' ? 'flash-encrypt':'flash-decrypt';
+
+  inputBlock.classList.add(cls);
+  outputBlock.classList.add(cls);
+  btn.classList.add(cls);
+
+  setTimeout(()=>{
+    inputBlock.classList.remove(cls);
+    outputBlock.classList.remove(cls);
+    btn.classList.remove(cls);
+
+    const residualColor = op==='encrypt' ? 'rgba(76,175,239,0.1)' : 'rgba(255,112,67,0.1)';
+    inputBlock.style.backgroundColor=residualColor;
+    outputBlock.style.backgroundColor=residualColor;
+    btn.style.backgroundColor=op==='encrypt' ? '#4cafef' : '#ff7043';
+  },500);
 }
 
-// 计算按钮
 function calculate(){
   flashModule();
   updateButtonStyle();
-  
+
   const mode=document.querySelector('input[name="mode"]:checked').value;
   const operation=document.querySelector('input[name="operation"]:checked').value;
 
@@ -151,14 +147,12 @@ function calculate(){
   }
 }
 
-// 日志记录
 function logOperation(mode,op,input,output){
   const log=document.getElementById("log");
   const time=new Date().toLocaleTimeString();
   log.innerHTML=`<div>[${time}] 模式:${mode} 操作:${op} 输入:${input} → 输出:${output}</div>`+log.innerHTML;
 }
 
-// 自动更新输入输出框
 const operationRadios=document.querySelectorAll('input[name="operation"]');
 operationRadios.forEach(radio=>{ radio.addEventListener('change',()=>{ updateIOFields(); updateButtonStyle(); }); });
 
@@ -175,19 +169,20 @@ function updateIOFields(){
       prefixInput.value='HT-';
       mainInput.value='';
       mainInput.placeholder='输入6位数字或大写字母';
+      mainInput.maxLength=6;
       prefixOutput.value='';
       output.value='';
     } else {
       prefixInput.value='76880800';
       mainInput.value='';
       mainInput.placeholder='输入4位数字';
+      mainInput.maxLength=4;
       prefixOutput.value='HT-';
       output.value='';
     }
   }
 }
 
-// 页面加载时初始化
 updateIOFields();
 updateButtonStyle();
 </script>
