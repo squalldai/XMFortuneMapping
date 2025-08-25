@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.8.9</title>
+<title>加密解密工具 v1.8.10</title>
 <style>
   body {font-family: Arial, sans-serif; background: #f8f9fb; margin: 0; padding: 0; text-align: center;}
   header {background: linear-gradient(135deg, #ffecd2, #fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333;}
@@ -25,7 +25,7 @@
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.8.9</header>
+<header>华添香精编号加密解密工具 v1.8.10</header>
 <div class="container">
   <h2>请选择模式</h2>
   <div class="radio-group">
@@ -82,7 +82,7 @@ function decrypt6(chars){
   return {left4,right4};
 }
 
-// --- UI 逻辑严格按照 1.8.7 ---
+// --- UI 逻辑 ---
 function resetUIForMode(mode){
   const mainInput=document.getElementById('mainInput');
   const prefixInput=document.getElementById('prefixInput');
@@ -141,8 +141,8 @@ function process(){
   } else {
     if(!/^[A-Z2-9]{6}$/.test(mainInput)){alert('请输入6位字母数字组合'); return;}
     const res=decrypt6(mainInput);
-    output.value=res.left4+res.right4;
-    prefixOutput.value=res.right4;
+    output.value=res.left4+res.right4; // 输出左8位
+    prefixOutput.value=res.right4; // 输出右4位
     flashContainer('rgba(255,112,67,0.2)');
   }
 
