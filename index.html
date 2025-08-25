@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.8.10</title>
+<title>加密解密工具 v1.8.11</title>
 <style>
-  body {font-family: Arial, sans-serif; background: #f8f9fb; margin: 0; padding: 0; text-align: center;}
+  body {font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center;}
   header {background: linear-gradient(135deg, #ffecd2, #fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333;}
   .container {max-width:480px; margin:20px auto; padding:20px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
   h2 {margin-bottom:12px; font-size:1.2rem; color:#444;}
   .radio-group {margin:12px 0; display:flex; justify-content:center; gap:16px;}
   label {font-size:0.95rem;}
-  .io-block {margin:20px 0; text-align:left;}
+  .io-block {margin:15px 0; text-align:left;}
   .io-label {display:block; margin-bottom:6px; font-size:0.9rem; font-weight:bold; color:#555;}
   .input-row {display:flex; align-items:center; gap:6px;}
   .prefix-input {width:90px; padding:6px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem;}
@@ -25,7 +25,7 @@
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.8.10</header>
+<header>华添香精编号加密解密工具 v1.8.11</header>
 <div class="container">
   <h2>请选择模式</h2>
   <div class="radio-group">
@@ -63,9 +63,10 @@
 </div>
 
 <script>
-// --- 算法保持不变 ---
-const CHAR_TABLE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32字符防呆
+const CHAR_TABLE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const KEY = 'ht1416';
+
+// 简化可逆算法示例
 function encrypt6(left4, right4){
   const num=parseInt(left4+right4,10);
   let chars='';
@@ -77,12 +78,10 @@ function decrypt6(chars){
   let num=0;
   for(let i=0;i<chars.length;i++){num=num*CHAR_TABLE.length+CHAR_TABLE.indexOf(chars[i]);}
   const str=num.toString().padStart(8,'0');
-  const left4=str.slice(0,4);
-  const right4=str.slice(4,8);
-  return {left4,right4};
+  return str;
 }
 
-// --- UI 逻辑 ---
+// --- UI逻辑 ---
 function resetUIForMode(mode){
   const mainInput=document.getElementById('mainInput');
   const prefixInput=document.getElementById('prefixInput');
@@ -93,15 +92,17 @@ function resetUIForMode(mode){
     prefixInput.readOnly=true;
     mainInput.value='';
     mainInput.maxLength=6;
+    mainInput.placeholder="输入6位字符";
     output.value='';
     prefixOutput.value='';
     document.getElementById('computeBtn').innerText='🔓 计算';
     document.getElementById('computeBtn').className='decrypt';
-  }else{
+  } else {
     prefixInput.value='76880800';
     prefixInput.readOnly=false;
     mainInput.value='';
     mainInput.maxLength=4;
+    mainInput.placeholder="输入4位数字";
     output.value='';
     prefixOutput.value='HT-';
     document.getElementById('computeBtn').innerText='🔒 计算';
@@ -139,16 +140,16 @@ function process(){
     prefixOutput.value='HT-';
     flashContainer('rgba(76,175,239,0.2)');
   } else {
-    if(!/^[A-Z2-9]{6}$/.test(mainInput)){alert('请输入6位字母数字组合'); return;}
-    const res=decrypt6(mainInput);
-    output.value=res.left4+res.right4; // 输出左8位
-    prefixOutput.value=res.right4; // 输出右4位
+    if(!/^[A-Z2-9]{6}$/.test(mainInput)){alert('请输入6位字符'); return;}
+    const str=decrypt6(mainInput);
+    output.value=str; // 左8位+右4位
+    prefixOutput.value=str.slice(-4); // 输出右4位
     flashContainer('rgba(255,112,67,0.2)');
   }
 
   const log=document.getElementById('log');
   const time=new Date().toLocaleTimeString();
-  log.innerHTML=`[${time}] 模式:${mode} 输入:${leftInput}+${mainInput} → 输出:${prefixOutput.value}${output.value}` + log.innerHTML;
+  log.innerHTML=`[${time}] 模式:${mode} 输入:${leftInput}+${mainInput} → 输出:${prefixOutput.value}${output.value}`+log.innerHTML;
 }
 </script>
 </body>
