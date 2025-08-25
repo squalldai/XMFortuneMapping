@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>华添香精编号加密解密工具 v2.4</title>
+<title>华添香精编号加密解密工具 v2.5</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f2f5; margin:0; padding:0; text-align:center; }
 header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:10vh; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; color:#333; }
@@ -26,7 +26,7 @@ button:disabled { opacity:0.5; cursor:not-allowed; }
 </head>
 <body>
 
-<header>华添香精编号加密解密工具 v2.4</header>
+<header>华添香精编号加密解密工具 v2.5</header>
 
 <div class="container">
   <div class="description">
@@ -77,15 +77,15 @@ const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ23456789';
 const charLen = chars.length;
 const seedKey = 'ht1416';
 
-// 模拟我们已经验证过的扰动逻辑
+// 固定模拟逻辑：生成 10000 映射顺序
 function stringToSeed(str){
   let hash = 0;
   for(let i=0;i<str.length;i++) hash = hash*31 + str.charCodeAt(i);
   return hash >>> 0;
 }
 
-function mulberry32(a) {
-  return function() {
+function mulberry32(a){
+  return function(){
     var t = a += 0x6D2B79F5;
     t = Math.imul(t ^ t>>>15, t | 1);
     t ^= t + Math.imul(t ^ t>>>7, t | 61);
@@ -93,50 +93,50 @@ function mulberry32(a) {
   }
 }
 
-function shuffle(array, seed) {
+function shuffle(array, seed){
   let rng = mulberry32(seed);
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(rng()*(i+1));
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
 
-// 初始化映射表（10000 个右侧数字）
+// 初始化映射表
 const rightMap = Array.from({length:10000},(_,i)=>i);
 shuffle(rightMap, stringToSeed(seedKey));
 
-function hashSeed(left4) {
+// hashSeed 用于扰动
+function hashSeed(left4){
   let hash = 0;
   for(let i=0;i<left4.length;i++){
-    hash = (hash*31 + left4.charCodeAt(i)) ^ seedKey.charCodeAt(i % seedKey.length);
+    hash = (hash*31 + left4.charCodeAt(i)) ^ seedKey.charCodeAt(i%seedKey.length);
   }
-  return Math.abs(hash % 10000);
+  return Math.abs(hash%10000);
 }
 
-function encryptADM(left, right){
+function encryptADM(left,right){
   const leftLast4 = left.slice(-4);
   const rightNum = parseInt(right);
   const seed = hashSeed(leftLast4);
   const rightMapped = rightMap[rightNum];
-  const combined = ((seed ^ rightMapped)*10000 + rightMapped);
-  let code='';
-  let num=combined;
+  const combined = rightMapped; // 严格按照模拟逻辑，不做额外运算
+  let code = '';
+  let num = combined;
   for(let i=0;i<6;i++){
-    code+=chars[num%charLen];
-    num=Math.floor(num/charLen);
+    code += chars[num%charLen];
+    num = Math.floor(num/charLen);
   }
   return code;
 }
 
-function decryptADM(code, left=''){
-  let num=0;
+function decryptADM(code,left=''){
+  let num = 0;
   for(let i=code.length-1;i>=0;i--){
-    num=num*charLen + chars.indexOf(code[i]);
+    num = num*charLen + chars.indexOf(code[i]);
   }
-  let rightMapped = num%10000;
-  const right = rightMapped.toString().padStart(4,'0');
+  const right = num.toString().padStart(4,'0');
   const leftFull = left || '76880800';
-  return {left:leftFull, right};
+  return {left:leftFull,right};
 }
 
 // UI逻辑
@@ -175,7 +175,7 @@ function updateUI(){
   ioContainer.style.background='#fdfdfd';
 }
 
-modeRadios.forEach(r=>{ r.addEventListener('change',updateUI); });
+modeRadios.forEach(r=>r.addEventListener('change',updateUI));
 updateUI();
 
 function flash(color){
@@ -194,16 +194,16 @@ function compute(){
   const op=document.querySelector('input[name="operation"]:checked').value;
   try{
     if(op==='encrypt'){
-      const left=prefixInput.value;
-      const right=mainInput.value;
+      const left = prefixInput.value;
+      const right = mainInput.value;
       if(!/^\d{4}$/.test(right)){ alert('请输入4位数字'); return; }
-      const code=encryptADM(left,right);
+      const code = encryptADM(left,right);
       prefixOutput.value='HT-';
       output.value=code;
       flash('#4cafef');
       log(op,left,right,prefixOutput.value,output.value);
     }else{
-      const code=mainInput.value;
+      const code = mainInput.value;
       if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code)){ alert('请输入6位字符'); return; }
       const leftFull = '7688'+prefixInput.value.slice(-4);
       const {left,right} = decryptADM(code,leftFull);
