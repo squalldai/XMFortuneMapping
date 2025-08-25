@@ -3,15 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.6.8</title>
+<title>加密解密工具 v1.7</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center; }
 header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333; }
+
 .container { max-width:480px; margin:20px auto; padding:20px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition: background 0.5s; }
+
+.info-module {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #333;
+  max-height: 4.5em;
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.5s ease;
+  margin-bottom: 12px;
+}
+.info-module.expanded { max-height: 500px; }
+.toggle-arrow { text-align:center; cursor:pointer; font-weight:bold; margin-top:4px; user-select:none; }
+
 h2 { margin-bottom:12px; font-size:1.2rem; color:#444; }
 .radio-group { margin:12px 0; display:flex; justify-content:center; gap:16px; }
 label { font-size:0.95rem; }
-.io-block { margin:20px 0; text-align:left; transition: background 0.5s; border-radius:8px; padding:6px; }
+.io-block { margin:10px 0; text-align:left; border-radius:8px; padding:6px; transition: background 0.5s; }
 .io-label { display:block; margin-bottom:6px; font-size:0.9rem; font-weight:bold; color:#555; }
 .input-row { display:flex; align-items:center; gap:6px; }
 .prefix-input { width:90px; padding:6px; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; }
@@ -23,8 +42,21 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.6.8</header>
-<div class="container" id="module">
+<header>华添香精编号加密解密工具 v1.7</header>
+<div class="container">
+
+<!-- 可折叠说明模块 -->
+<div id="infoModule" class="info-module">
+  <div id="infoContent">
+    当前仅支持 <strong>ADM 模式</strong>。<br>
+    左输入 8 位数字，前四位固定 7688，右输入 4 位数字（加密）或 6 位数字+字母（解密）。<br>
+    点击 <strong>计算</strong> 完成加解密，输出左侧 HT-（加密）或 7688 开头数字（解密），右侧显示结果。<br>
+    输入必须符合格式，其他模式暂不可用。<br>
+    <span class="more-text">更多说明内容可在这里添加，如限制、注意事项或使用提示...</span>
+  </div>
+  <div id="toggleArrow" class="toggle-arrow">▼</div>
+</div>
+
 <h2>请选择模式</h2>
 <div class="radio-group">
   <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
@@ -37,29 +69,32 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
   <label><input type="radio" name="operation" value="decrypt"> 解密</label>
 </div>
 
-<div class="io-block" id="inputBlock">
-<span class="io-label">输入</span>
-<div class="input-row">
-  <input type="text" id="prefixInput" class="prefix-input" value="76880800">
-  <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字">
-</div>
-</div>
+<!-- 整体计算容器 -->
+<div class="calc-container" id="calcContainer">
+  <div class="io-block" id="inputBlock">
+    <span class="io-label">输入</span>
+    <div class="input-row">
+      <input type="text" id="prefixInput" class="prefix-input" value="76880800">
+      <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字">
+    </div>
+  </div>
 
-<button class="button-calc" id="calcBtn" onclick="calculate()">🔒 计算</button>
+  <button class="button-calc" id="calcBtn" onclick="calculate()">🔒 计算</button>
 
-<div class="io-block" id="outputBlock">
-<span class="io-label">结果</span>
-<div class="input-row">
-  <input type="text" id="prefixOutput" class="prefix-input" value="HT-" readonly>
-  <input type="text" id="output" readonly>
-</div>
+  <div class="io-block" id="outputBlock">
+    <span class="io-label">结果</span>
+    <div class="input-row">
+      <input type="text" id="prefixOutput" class="prefix-input" value="HT-" readonly>
+      <input type="text" id="output" readonly>
+    </div>
+  </div>
 </div>
 
 <div id="log"></div>
 </div>
 
 <script>
-const chars='23456789ABCDEFGHJKLMNPRSTUVWXYZ'; // 32字符,去除易混淆字符
+const chars='23456789ABCDEFGHJKLMNPRSTUVWXYZ';
 const key='ht1416';
 
 function seededRandom(seed){
@@ -70,14 +105,8 @@ function seededRandom(seed){
 
 // 简单可逆映射函数：Feistel风格
 function encrypt8to6(num8,key){
-  const rng=seededRandom(key+num8);
-  let n=0;
-  for(let i=0;i<6;i++){
-    n=Math.floor(rng()*chars.length);
-  }
-  // 生成6位字符可逆
-  let out='';
   let val=parseInt(num8,10);
+  let out='';
   for(let i=0;i<6;i++){
     out=chars[val%chars.length]+out;
     val=Math.floor(val/chars.length);
@@ -101,22 +130,13 @@ function updateButtonStyle(){
 }
 
 function flashModule(){
-  const inputBlock=document.getElementById('inputBlock');
-  const outputBlock=document.getElementById('outputBlock');
-  const btn=document.getElementById('calcBtn');
+  const container=document.getElementById('calcContainer');
   const op=document.querySelector('input[name="operation"]:checked').value;
   const cls=op==='encrypt'?'flash-encrypt':'flash-decrypt';
-  inputBlock.classList.add(cls);
-  outputBlock.classList.add(cls);
-  btn.classList.add(cls);
+  container.classList.add(cls);
   setTimeout(()=>{
-    inputBlock.classList.remove(cls);
-    outputBlock.classList.remove(cls);
-    btn.classList.remove(cls);
-    const residualColor=op==='encrypt'?'rgba(76,175,239,0.1)':'rgba(255,112,67,0.1)';
-    inputBlock.style.backgroundColor=residualColor;
-    outputBlock.style.backgroundColor=residualColor;
-    btn.style.backgroundColor=op==='encrypt'?'#4cafef':'#ff7043';
+    container.classList.remove(cls);
+    container.style.backgroundColor=op==='encrypt'?'rgba(76,175,239,0.1)':'rgba(255,112,67,0.1)';
   },500);
 }
 
@@ -133,7 +153,7 @@ function calculate(){
   if(operation==='encrypt'){
     if(!/^\d{8}$/.test(left)||!left.startsWith('7688')){ alert('左输入必须8位数字且以7688开头'); return;}
     if(!/^\d{4}$/.test(right)){ alert('右输入必须4位数字'); return;}
-    const input8=left.slice(4)+right; // 后4位左侧+右侧4位 → 8位参与加密
+    const input8=left.slice(4)+right;
     const result=encrypt8to6(input8,key);
     outLeft.value='HT-';
     outRight.value=result;
@@ -158,9 +178,7 @@ document.querySelectorAll('input[name="operation"]').forEach(radio=>{
   radio.addEventListener('change',()=>{
     document.getElementById('mainInput').value='';
     document.getElementById('output').value='';
-    document.getElementById('inputBlock').style.backgroundColor='transparent';
-    document.getElementById('outputBlock').style.backgroundColor='transparent';
-    document.getElementById('calcBtn').style.backgroundColor='transparent';
+    document.getElementById('calcContainer').style.backgroundColor='transparent';
     const op=document.querySelector('input[name="operation"]:checked').value;
     if(op==='decrypt'){
       document.getElementById('prefixInput').value='HT-';
@@ -175,6 +193,14 @@ document.querySelectorAll('input[name="operation"]').forEach(radio=>{
     }
     updateButtonStyle();
   });
+});
+
+// 可折叠说明模块
+const infoModule = document.getElementById('infoModule');
+const toggleArrow = document.getElementById('toggleArrow');
+toggleArrow.addEventListener('click', () => {
+  infoModule.classList.toggle('expanded');
+  toggleArrow.textContent = infoModule.classList.contains('expanded') ? '▲' : '▼';
 });
 
 updateButtonStyle();
