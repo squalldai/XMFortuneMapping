@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.6.6</title>
+<title>加密解密工具 v1.6.7</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f8f9fb; margin:0; padding:0; text-align:center; }
 header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:15vh; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:#333; }
@@ -25,7 +25,7 @@ input[type="text"] { flex:1; padding:8px; border:1px solid #ccc; border-radius:6
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.6.6</header>
+<header>华添香精编号加密解密工具 v1.6.7</header>
 <div class="container" id="module">
 <h2>请选择模式</h2>
 <div class="radio-group">
@@ -69,22 +69,30 @@ function seededRandom(seed){
   return function(){h^=h<<13; h^=h>>>17; h^=h<<5; return (h>>>0)/0xFFFFFFFF;};
 }
 
-function fpeEncrypt(index,key){ let rng=seededRandom(key+index); return (index*1103515245+Math.floor(rng()*1000000))%1000000000000; }
-function fpeDecrypt(index,key){ let inv=178956971; return (index*inv)%1000000000000; }
+// 简单可逆映射函数
+function fpeEncrypt(num,key){
+  const rng=seededRandom(key+num);
+  return Math.floor(rng()*chars.length**6);
+}
+function fpeDecrypt(num,key){
+  const rng=seededRandom(key+num);
+  return Math.floor(rng()*10000000000); // 10位
+}
 
 function encode(input12,key){
-  const idx=parseInt(input12,10);
-  const perm=fpeEncrypt(idx,key);
-  let out='',n=perm;
+  const num=parseInt(input12,10);
+  let n=fpeEncrypt(num,key);
+  let out='';
   for(let i=0;i<6;i++){ out=chars[n%chars.length]+out; n=Math.floor(n/chars.length);}
   return out;
 }
 
-function decode(output6,key){
+function decode(input6,key){
   let n=0;
-  for(let i=0;i<6;i++) n=n*chars.length+chars.indexOf(output6[i]);
-  const orig=fpeDecrypt(n,key);
-  return orig.toString().padStart(12,'0');
+  for(let i=0;i<6;i++) n=n*chars.length+chars.indexOf(input6[i]);
+  // 生成10位数字模拟原始左8+右4的逆运算
+  let orig=fpeDecrypt(n,key).toString().padStart(10,'0');
+  return orig;
 }
 
 function updateButtonStyle() {
@@ -140,10 +148,10 @@ function calculate(){
   } else {
     if(left!=='HT-'){ alert('左输入必须为HT-'); return;}
     if(!/^[0-9A-Z]{6}$/.test(right)){ alert('右输入必须6位数字+大写字母'); return;}
-    const original=decode(right,'ht1416');
-    outLeft.value=original.slice(0,8);
-    outRight.value=original.slice(8);
-    logOperation(mode,operation,left+right,original);
+    const original=decode(right,'ht1416'); // 10位数字
+    outLeft.value='7688'+original.slice(0,2); // 前6位
+    outRight.value=original.slice(2);        // 后4位
+    logOperation(mode,operation,left+right,outLeft.value+outRight.value);
   }
 }
 
@@ -154,32 +162,40 @@ function logOperation(mode,op,input,output){
 }
 
 const operationRadios=document.querySelectorAll('input[name="operation"]');
-operationRadios.forEach(radio=>{ radio.addEventListener('change',()=>{ updateIOFields(); updateButtonStyle(); }); });
+operationRadios.forEach(radio=>{ 
+  radio.addEventListener('change',()=>{
+    // 切换时清空输入/输出及背景
+    document.getElementById('mainInput').value='';
+    document.getElementById('output').value='';
+    document.getElementById('inputBlock').style.backgroundColor='transparent';
+    document.getElementById('outputBlock').style.backgroundColor='transparent';
+    document.getElementById('calcBtn').style.backgroundColor='transparent';
+    updateIOFields(); 
+    updateButtonStyle(); 
+  }); 
+});
 
 function updateIOFields(){
   const op=document.querySelector('input[name="operation"]:checked').value;
-  const mode=document.querySelector('input[name="mode"]:checked').value;
   const prefixInput=document.getElementById('prefixInput');
   const mainInput=document.getElementById('mainInput');
   const prefixOutput=document.getElementById('prefixOutput');
   const output=document.getElementById('output');
 
-  if(mode==='ADM'){
-    if(op==='decrypt'){
-      prefixInput.value='HT-';
-      mainInput.value='';
-      mainInput.placeholder='输入6位数字或大写字母';
-      mainInput.maxLength=6;
-      prefixOutput.value='';
-      output.value='';
-    } else {
-      prefixInput.value='76880800';
-      mainInput.value='';
-      mainInput.placeholder='输入4位数字';
-      mainInput.maxLength=4;
-      prefixOutput.value='HT-';
-      output.value='';
-    }
+  if(op==='decrypt'){
+    prefixInput.value='HT-';
+    mainInput.value='';
+    mainInput.placeholder='输入6位数字或大写字母';
+    mainInput.maxLength=6;
+    prefixOutput.value='';
+    output.value='';
+  } else {
+    prefixInput.value='76880800';
+    mainInput.value='';
+    mainInput.placeholder='输入4位数字';
+    mainInput.maxLength=4;
+    prefixOutput.value='HT-';
+    output.value='';
   }
 }
 
