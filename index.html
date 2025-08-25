@@ -1,264 +1,351 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加密解密工具 v1.8.2</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>加密解密工具 v1.8.3</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f0f2f5;
-  margin:0;
-  padding:0;
-  text-align:center;
-}
-header {
-  background: linear-gradient(135deg,#ffecd2,#fcb69f);
-  height:12vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.95rem;
-  font-weight:bold;
-  color:#333;
-  box-shadow:0 2px 8px rgba(0,0,0,0.1);
-}
-.container {
-  max-width:480px;
-  margin:10px auto;
-  padding:12px 16px;
-  background:#fff;
-  border-radius:16px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
-}
-.info-module {
-  background: rgba(240,240,240,0.8);
-  border-radius: 12px;
-  padding: 12px;
-  text-align:left;
-  font-size:0.85rem;
-  font-style: italic;
-  color: #333;
-  margin-bottom: 12px;
-}
-h2 {
-  margin:10px 0;
-  font-size:1.1rem;
-  color:#444;
-}
-.radio-group {
-  margin:8px 0;
-  display:flex;
-  justify-content:center;
-  gap:12px;
-}
-label {
-  font-size:0.9rem;
-}
-.io-block {
-  margin:8px 0;
-  text-align:left;
-  border-radius:8px;
-  padding:6px;
-  transition: background 0.5s;
-}
-.io-label {
-  display:block;
-  margin-bottom:4px;
-  font-size:0.88rem;
-  font-weight:bold;
-  color:#555;
-}
-.input-row {
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.prefix-input {
-  width:95px;
-  padding:6px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:0.88rem;
-}
-input[type="text"] {
-  flex:1;
-  padding:8px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:1rem;
-  text-align:center;
-  transition: background 0.5s;
-}
-.button-calc {
-  width:200px;
-  padding:12px 0;
-  border:none;
-  border-radius:12px;
-  font-size:1.05rem;
-  cursor:pointer;
-  margin:16px 0;
-  transition:all 0.2s, background 0.5s;
-  color:white;
-}
-#log {
-  margin-top:12px;
-  text-align:left;
-  font-size:0.82rem;
-  max-height:200px;
-  overflow-y:auto;
-  border-top:1px solid #ddd;
-  padding-top:8px;
-}
-.flash-encrypt { background-color: rgba(76,175,239,0.3); }
-.flash-decrypt { background-color: rgba(255,112,67,0.3); }
+  :root{
+    --blue:#4cafef;
+    --orange:#ff7043;
+    --bg:#f0f2f5;
+    --card:#ffffff;
+    --text:#333;
+    --muted:#555;
+    --hint:#777;
+    --shadow:0 4px 12px rgba(0,0,0,0.1);
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    margin:0; padding:0; text-align:center; color:var(--text);
+  }
+  header{
+    background:linear-gradient(135deg,#ffecd2,#fcb69f);
+    height:12vh; min-height:64px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.95rem; font-weight:700; color:#333;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  }
+  .container{
+    max-width:480px; margin:10px auto; padding:12px 16px;
+    background:var(--card); border-radius:16px; box-shadow:var(--shadow);
+  }
+  .info-module{
+    background:rgba(240,240,240,0.8);
+    border-radius:12px; padding:12px; text-align:left;
+    font-size:0.86rem; font-style:italic; color:#444; margin-bottom:12px;
+  }
+  h2{ margin:10px 0 6px; font-size:1.08rem; color:#444; }
+  .radio-group{
+    margin:6px 0 12px; display:flex; justify-content:center; gap:14px; flex-wrap:wrap;
+  }
+  label{ font-size:0.92rem; color:#333; }
+  .calc-container{
+    border-radius:14px; padding:10px; transition:background 0.5s, box-shadow 0.3s;
+    backdrop-filter:saturate(120%) blur(2px);
+  }
+  .io-block{
+    margin:6px 0; text-align:left; border-radius:10px; padding:8px; transition:background 0.5s;
+  }
+  .io-label{
+    display:block; margin-bottom:6px; font-size:0.88rem; font-weight:700; color:#555;
+  }
+  .input-row{ display:flex; align-items:center; gap:8px; }
+  .prefix-input{
+    width:110px; padding:8px; border:1px solid #d0d5dd; border-radius:8px; font-size:0.9rem; text-align:center;
+    background:#fafafa;
+  }
+  input[type="text"]{
+    flex:1; padding:10px; border:1px solid #d0d5dd; border-radius:8px; font-size:1.02rem; text-align:center;
+    transition:box-shadow .2s, border-color .2s;
+  }
+  input[type="text"]:focus{ outline:none; border-color:#b7c9ff; box-shadow:0 0 0 3px rgba(71,124,255,0.15); }
+  .button-calc{
+    width:230px; padding:12px 0; border:none; border-radius:12px; font-size:1.08rem;
+    cursor:pointer; margin:12px auto; color:#fff; display:block; transition:transform .15s, opacity .2s, background .2s;
+  }
+  .button-calc:hover{ transform:translateY(-1px); opacity:.95; }
+  .button-calc:active{ transform:translateY(0); }
+  #log{
+    margin-top:12px; text-align:left; font-size:0.82rem; max-height:220px; overflow-y:auto;
+    border-top:1px solid #e6e8ee; padding-top:8px;
+  }
+  .flash-encrypt{ background-color:rgba(76,175,239,.22); }
+  .flash-decrypt{ background-color:rgba(255,112,67,.22); }
+
+  /* 紧凑布局，保证首屏约90%内可见 */
+  @media (max-width:480px){
+    header{ font-size:1.7rem; }
+    .prefix-input{ width:100px; padding:7px; font-size:.9rem; }
+    input[type="text"]{ padding:9px; font-size:1rem; }
+    .button-calc{ width:220px; }
+  }
+
+  /* 小提示 */
+  .hint{ font-size:0.78rem; color:#777; margin-top:2px; }
 </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v1.8.2</header>
+<header>华添香精编号加密解密工具 v1.8.3</header>
+
 <div class="container">
 
-<!-- 说明模块 -->
-<div class="info-module">
-  当前仅支持 <strong>ADM 模式</strong>。<br>
-  左输入 8 位数字，前四位固定 7688，右输入 4 位数字（加密）或 6 位数字+字母（解密）。<br>
-  点击 <strong>计算</strong> 完成加解密，输出左侧 HT-（加密）或 7688 开头数字（解密），右侧显示结果。<br>
-  输入必须符合格式，其他模式暂不可用。<br>
-  可根据需要调整输入，注意防呆设计避免误认字符。
-</div>
+  <!-- 说明：完整展示 -->
+  <div class="info-module">
+    当前仅支持 <strong>ADM 模式</strong>：<br>
+    · 加密：左输入 8 位数字（以 7688 开头），右输入 4 位数字 → 输出 <strong>6 位</strong>大写字母/数字（无 0/O/1/I），左侧显示 HT-。<br>
+    · 解密：输入 HT- 与右侧 6 位编码 → 还原为左侧 <strong>7688+4位数字</strong>，右侧 4 位数字。<br>
+    · 算法为密钥驱动的轻量级洗牌（Feistel）+ 定长 Base32 编码，<strong>完全可逆、无大型映射表、执行快速</strong>。
+  </div>
 
-<h2>请选择模式</h2>
-<div class="radio-group">
-  <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
-  <label style="color: gray;"><input type="radio" name="mode" value="德之馨" disabled> 德之馨(开发中)</label>
-</div>
+  <h2>请选择模式</h2>
+  <div class="radio-group">
+    <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
+    <label style="color:gray;"><input type="radio" name="mode" value="德之馨" disabled> 德之馨（开发中）</label>
+  </div>
 
-<h2>请选择操作</h2>
-<div class="radio-group">
-  <label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
-  <label><input type="radio" name="operation" value="decrypt"> 解密</label>
-</div>
+  <h2>请选择操作</h2>
+  <div class="radio-group">
+    <label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
+    <label><input type="radio" name="operation" value="decrypt"> 解密</label>
+  </div>
 
-<!-- 计算容器 -->
-<div class="calc-container" id="calcContainer">
-  <div class="io-block" id="inputBlock">
-    <span class="io-label">输入</span>
-    <div class="input-row">
-      <input type="text" id="prefixInput" class="prefix-input" value="76880800">
-      <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字">
+  <!-- 计算大容器：输入区 + 按钮 + 输出区（整体闪烁/残留） -->
+  <div class="calc-container" id="calcContainer">
+    <!-- 输入 -->
+    <div class="io-block" id="inputBlock">
+      <span class="io-label">输入</span>
+      <div class="input-row">
+        <input type="text" id="prefixInput" class="prefix-input" value="76880800" autocomplete="off" inputmode="numeric" />
+        <input type="text" id="mainInput" maxlength="4" placeholder="输入4位数字" autocomplete="off" inputmode="numeric" />
+      </div>
+      <div class="hint" id="inputHint">加密：左 8 位且以 7688 开头，右 4 位数字；解密：左 HT-，右 6 位大写字母/数字</div>
+    </div>
+
+    <!-- 计算按钮 -->
+    <button class="button-calc" id="calcBtn" onclick="onCalculate()">🔒 计算</button>
+
+    <!-- 输出 -->
+    <div class="io-block" id="outputBlock">
+      <span class="io-label">结果</span>
+      <div class="input-row">
+        <input type="text" id="prefixOutput" class="prefix-input" value="HT-" readonly />
+        <input type="text" id="output" readonly />
+      </div>
     </div>
   </div>
 
-  <button class="button-calc" id="calcBtn" onclick="calculate()">🔒 计算</button>
-
-  <div class="io-block" id="outputBlock">
-    <span class="io-label">结果</span>
-    <div class="input-row">
-      <input type="text" id="prefixOutput" class="prefix-input" value="HT-" readonly>
-      <input type="text" id="output" readonly>
-    </div>
-  </div>
-</div>
-
-<div id="log"></div>
+  <div id="log"></div>
 </div>
 
 <script>
-const chars='23456789ABCDEFGHJKLMNPRSTUVWXYZ';
-const key='ht1416';
+  // 固定密钥（写死）
+  const ADM_KEY = "ht1416";
 
-function encrypt8to6(num8,key){
-  let val=parseInt(num8,10);
-  let out='';
-  for(let i=0;i<6;i++){
-    out=chars[val%chars.length]+out;
-    val=Math.floor(val/chars.length);
-  }
-  return out;
-}
+  // 不易混淆的 32 字符集（无 0/O/1/I）
+  const ALPH = '23456789ABCDEFGHJKLMNPRSTUVWXYZ';
+  const RADIX = ALPH.length; // 32
 
-function decrypt6to8(str6,key){
-  let val=0;
-  for(let i=0;i<6;i++){
-    val=val*chars.length+chars.indexOf(str6[i]);
-  }
-  return val.toString().padStart(8,'0');
-}
-
-function updateButtonStyle(){
-  const op=document.querySelector('input[name="operation"]:checked').value;
-  const btn=document.getElementById('calcBtn');
-  if(op==='encrypt'){ btn.textContent='🔒 计算'; btn.style.background='#4cafef';}
-  else{ btn.textContent='🔓 计算'; btn.style.background='#ff7043';}
-}
-
-function flashModule(){
-  const container=document.getElementById('calcContainer');
-  const op=document.querySelector('input[name="operation"]:checked').value;
-  const cls=op==='encrypt'?'flash-encrypt':'flash-decrypt';
-  container.classList.add(cls);
-  setTimeout(()=>{
-    container.classList.remove(cls);
-    container.style.backgroundColor=op==='encrypt'?'rgba(76,175,239,0.1)':'rgba(255,112,67,0.1)';
-  },500);
-}
-
-function calculate(){
-  flashModule();
-  updateButtonStyle();
-  const mode=document.querySelector('input[name="mode"]:checked').value;
-  const operation=document.querySelector('input[name="operation"]:checked').value;
-  let left=document.getElementById("prefixInput").value.trim();
-  let right=document.getElementById("mainInput").value.trim();
-  let outLeft=document.getElementById("prefixOutput");
-  let outRight=document.getElementById("output");
-
-  if(operation==='encrypt'){
-    if(!/^\d{8}$/.test(left)||!left.startsWith('7688')){ alert('左输入必须8位数字且以7688开头'); return;}
-    if(!/^\d{4}$/.test(right)){ alert('右输入必须4位数字'); return;}
-    const input8=left.slice(4)+right;
-    const result=encrypt8to6(input8,key);
-    outLeft.value='HT-';
-    outRight.value=result;
-    logOperation(mode,operation,left+'+'+right,'HT-'+result);
-  }else{
-    if(left!=='HT-'){ alert('左输入必须为HT-'); return;}
-    if(!/^[0-9A-Z]{6}$/.test(right)){ alert('右输入必须6位数字+大写字母'); return;}
-    const dec=decrypt6to8(right,key);
-    outLeft.value='7688'+dec.slice(0,4);
-    outRight.value=dec.slice(4);
-    logOperation(mode,operation,left+right,outLeft.value+outRight.value);
-  }
-}
-
-function logOperation(mode,op,input,output){
-  const log=document.getElementById("log");
-  const time=new Date().toLocaleTimeString();
-  log.innerHTML=`<div>[${time}] 模式:${mode} 操作:${op} 输入:${input} → 输出:${output}</div>`+log.innerHTML;
-}
-
-document.querySelectorAll('input[name="operation"]').forEach(radio=>{
-  radio.addEventListener('change',()=>{
-    document.getElementById('mainInput').value='';
-    document.getElementById('output').value='';
-    document.getElementById('calcContainer').style.backgroundColor='transparent';
-    const op=document.querySelector('input[name="operation"]:checked').value;
-    if(op==='decrypt'){
-      document.getElementById('prefixInput').value='HT-';
-      document.getElementById('mainInput').placeholder='输入6位数字或大写字母';
-      document.getElementById('mainInput').maxLength=6;
-      document.getElementById('prefixOutput').value='';
-    }else{
-      document.getElementById('prefixInput').value='76880800';
-      document.getElementById('mainInput').placeholder='输入4位数字';
-      document.getElementById('mainInput').maxLength=4;
-      document.getElementById('prefixOutput').value='HT-';
+  // 轻量伪随机：把 key 压成种子，并混入 round/x 做 xorshift 与乘法搅拌
+  function roundPRF(x, round, keyStr) {
+    let seed = 2166136261 >>> 0; // FNV-1a 初值
+    for (let i = 0; i < keyStr.length; i++) {
+      seed ^= keyStr.charCodeAt(i);
+      seed = Math.imul(seed, 16777619) >>> 0;
     }
-    updateButtonStyle();
-  });
-});
+    let s = (seed ^ (round * 0x9E3779B9) ^ x) >>> 0;
+    s ^= s << 13; s >>>= 0;
+    s ^= s >>> 17; s >>>= 0;
+    s ^= s << 5;  s >>>= 0;
+    s = Math.imul(s ^ 0x85EBCA6B, 0xC2B2AE35) >>> 0;
+    return s & 0xFFFF; // 16-bit
+  }
 
-updateButtonStyle();
+  // Feistel 6 轮（可逆），作用在 8 位十进制整数（0..99999999）
+  function feistelEnc8(n8, keyStr){
+    let L = Math.floor(n8 / 10000);
+    let R = n8 % 10000;
+    for(let r=1; r<=6; r++){
+      const F = roundPRF(R, r, keyStr) % 10000;
+      const newL = R;
+      const newR = (L ^ F) % 10000;
+      L = newL; R = newR;
+    }
+    return L * 10000 + R;
+  }
+  function feistelDec8(n8, keyStr){
+    let L = Math.floor(n8 / 10000);
+    let R = n8 % 10000;
+    for(let r=6; r>=1; r--){
+      const F = roundPRF(L, r, keyStr) % 10000;
+      const newR = L;
+      const newL = (R ^ F) % 10000;
+      L = newL; R = newR;
+    }
+    return L * 10000 + R;
+  }
+
+  // 8 位十进制 ↔ 定长 6 位 Base32
+  function toBase32_6(n){
+    let s = '';
+    for(let i=0;i<6;i++){
+      s = ALPH[n % RADIX] + s;
+      n = Math.floor(n / RADIX);
+    }
+    return s;
+  }
+  function fromBase32_6(str){
+    let n = 0;
+    for(let i=0;i<6;i++){
+      const v = ALPH.indexOf(str[i]);
+      if(v < 0) return NaN;
+      n = n * RADIX + v;
+    }
+    return n;
+  }
+
+  // === ADM 入口 ===
+  // 加密：left8(以7688开头) + right4 → 6位编码
+  function ADM_encrypt(left8, right4){
+    const block8 = parseInt(left8.slice(4) + right4, 10); // 参与加密的 8 位
+    const mixed  = feistelEnc8(block8, ADM_KEY);
+    return toBase32_6(mixed);
+  }
+  // 解密：code6 → { left8: '7688xxxx', right4: 'xxxx' }
+  function ADM_decrypt(code6){
+    const mixed = fromBase32_6(code6);
+    if(!Number.isFinite(mixed)) return null;
+    const block8 = feistelDec8(mixed, ADM_KEY);
+    const s = String(block8).padStart(8,'0');
+    return { left8: '7688' + s.slice(0,4), right4: s.slice(4) };
+  }
+
+  // ===== UI 逻辑 =====
+  const calcBtn = document.getElementById('calcBtn');
+  const calcContainer = document.getElementById('calcContainer');
+  const prefixInput = document.getElementById('prefixInput');
+  const mainInput = document.getElementById('mainInput');
+  const prefixOutput = document.getElementById('prefixOutput');
+  const output = document.getElementById('output');
+
+  function currentOp(){
+    return document.querySelector('input[name="operation"]:checked').value;
+  }
+
+  function updateButtonStyle(){
+    if(currentOp()==='encrypt'){
+      calcBtn.textContent = '🔒 计算';
+      calcBtn.style.background = 'var(--blue)';
+    }else{
+      calcBtn.textContent = '🔓 计算';
+      calcBtn.style.background = 'var(--orange)';
+    }
+  }
+
+  function flashModule(){
+    const cls = currentOp()==='encrypt' ? 'flash-encrypt' : 'flash-decrypt';
+    calcContainer.classList.add(cls);
+    setTimeout(()=>{
+      calcContainer.classList.remove(cls);
+      // 残留淡色
+      calcContainer.style.backgroundColor = (currentOp()==='encrypt')
+        ? 'rgba(76,175,239,0.08)'
+        : 'rgba(255,112,67,0.08)';
+    }, 420);
+  }
+
+  function clearTint(){
+    calcContainer.style.backgroundColor = 'transparent';
+  }
+
+  function logOperation(mode,op,input,outputStr){
+    const log = document.getElementById('log');
+    const t = new Date().toLocaleTimeString();
+    log.innerHTML = `<div>[${t}] 模式:${mode} 操作:${op} 输入:${input} → 输出:${outputStr}</div>` + log.innerHTML;
+  }
+
+  // 切换加/解密时重置输入/输出与提示
+  document.querySelectorAll('input[name="operation"]').forEach(r=>{
+    r.addEventListener('change', ()=>{
+      // 清空值
+      mainInput.value = '';
+      output.value = '';
+      clearTint();
+
+      if(currentOp()==='decrypt'){
+        prefixInput.value = 'HT-';
+        prefixOutput.value = '';        // 解密时，输出左为 7688xxxx（计算后填入）
+        mainInput.placeholder = '输入6位编码（大写）';
+        mainInput.maxLength = 6;
+      }else{
+        prefixInput.value = '76880800';
+        prefixOutput.value = 'HT-';     // 加密时，输出左固定 HT-
+        mainInput.placeholder = '输入4位数字';
+        mainInput.maxLength = 4;
+      }
+      updateButtonStyle();
+    });
+  });
+
+  // 解密输入自动转大写 & 过滤不在字符集的字符
+  mainInput.addEventListener('input', ()=>{
+    if(currentOp()==='decrypt'){
+      const up = mainInput.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
+      mainInput.value = up;
+    }
+  });
+
+  function onCalculate(){
+    flashModule();
+    updateButtonStyle();
+
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    if(mode!=='ADM'){ alert('当前仅支持 ADM 模式'); return; }
+
+    const op = currentOp();
+
+    if(op==='encrypt'){
+      const left = prefixInput.value.trim();
+      const right = mainInput.value.trim();
+
+      if(!/^\d{8}$/.test(left) || !left.startsWith('7688')){
+        alert('左输入需为 8 位数字，且以 7688 开头'); return;
+      }
+      if(!/^\d{4}$/.test(right)){
+        alert('右输入需为 4 位数字'); return;
+      }
+
+      const code6 = ADM_encrypt(left, right);
+      prefixOutput.value = 'HT-';
+      output.value = code6;
+
+      logOperation(mode, op, `${left}+${right}`, `HT-${code6}`);
+
+    }else{ // decrypt
+      const left = prefixInput.value.trim();
+      const code = mainInput.value.trim().toUpperCase();
+
+      if(left!=='HT-'){
+        alert('解密模式下，左输入必须为 HT-'); return;
+      }
+      if(!/^[23456789ABCDEFGHJKLMNPRSTUVWXYZ]{6}$/.test(code)){
+        alert('右输入需为 6 位（数字或大写字母，且不含 0/O/1/I）'); return;
+      }
+
+      const res = ADM_decrypt(code);
+      if(!res){ alert('解密失败：编码非法'); return; }
+
+      prefixOutput.value = res.left8;   // 7688 + 4 位
+      output.value = res.right4;        // 后 4 位
+
+      logOperation(mode, op, `${left}${code}`, `${res.left8}${res.right4}`);
+    }
+  }
+
+  // 初始样式
+  updateButtonStyle();
 </script>
 </body>
 </html>
