@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>华添香精编号加密解密工具 v2.0</title>
+<title>华添香精编号加密解密工具 v2.1</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -15,40 +15,48 @@
 
   header {
     background: linear-gradient(135deg,#ffecd2,#fcb69f);
-    height: 15vh;
+    height: 10vh; /* 缩小标题区 */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 1.5rem; /* 字体稍小 */
     font-weight: bold;
     color: #333;
   }
 
   .container {
-    max-width: 480px;
+    max-width: 500px;
     margin: 10px auto;
-    padding: 20px;
+    padding: 16px;
     background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
   }
 
   .description {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #555;
     font-style: italic;
-    background: #f8f8f8;
-    padding: 8px;
+    background: #fafafa;
+    padding: 6px;
     border-radius: 6px;
+  }
+
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: bold;
+    margin: 6px 0 4px 0;
+    color: #333;
   }
 
   .radio-group {
     display: flex;
     justify-content: center;
-    gap: 16px;
+    gap: 12px;
+    margin-bottom: 6px;
   }
 
   .io-block {
@@ -56,6 +64,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
+    width: 100%;
   }
 
   .io-label {
@@ -72,8 +81,8 @@
   .prefix-input, input[type=text] {
     border-radius: 6px;
     border: 1px solid #ccc;
-    padding: 6px;
-    font-size: 0.95rem;
+    padding: 8px;
+    font-size: 1rem;
     text-align: center;
   }
 
@@ -88,13 +97,14 @@
   .buttons {
     display: flex;
     justify-content: center;
+    margin: 8px 0;
   }
 
   button {
-    padding: 10px 20px;
+    padding: 8px 16px;
     border: none;
-    border-radius: 10px;
-    font-size: 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -111,39 +121,39 @@
     border-radius: 12px;
     padding: 12px;
     transition: background 0.3s;
+    background: #fdfdfd;
   }
 
   #log {
-    margin-top: 10px;
+    margin-top: 8px;
     text-align: left;
-    font-size: 0.85rem;
-    max-height: 200px;
+    font-size: 0.8rem;
+    max-height: 160px;
     overflow-y: auto;
-    border-top: 1px solid #ddd;
-    padding-top: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 6px;
+    color: #333;
   }
 </style>
 </head>
 <body>
 
-<header>华添香精编号加密解密工具 v2.0</header>
+<header>华添香精编号加密解密工具 v2.1</header>
 
 <div class="container">
 
   <div class="description">
-    当前仅支持 ADM 模式。<br>
     加密：输入左 8 位数字（前四位固定 7688）、右 4 位数字 → 输出 6 位字符。<br>
-    解密：输入 6 位字符 → 输出左 7688+4 位、右 4 位数字。<br>
-    操作简单，严格可逆。
+    解密：输入 6 位字符 → 输出左 7688+4 位、右 4 位数字。
   </div>
 
-  <h2>请选择模式</h2>
+  <div class="section-title">模式</div>
   <div class="radio-group">
     <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
     <label style="color: gray;"><input type="radio" name="mode" value="德之馨" disabled> 德之馨(开发中)</label>
   </div>
 
-  <h2>请选择操作</h2>
+  <div class="section-title">操作</div>
   <div class="radio-group">
     <label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
     <label><input type="radio" name="operation" value="decrypt"> 解密</label>
@@ -176,36 +186,8 @@
 
 <script>
   // --- 核心算法 ---
-  const key = "ht1416";
-  const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ23456789'; // 避免 0,O 1,I Q
+  const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ23456789'; 
   const charLen = chars.length;
-
-  function seededRandom(seed) {
-    let h = 0;
-    for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0;
-    return function(){
-      h ^= h<<13; h ^= h>>>17; h ^= h<<5;
-      return (h>>>0)/0xFFFFFFFF;
-    };
-  }
-
-  function generateMapping(seed) {
-    const rng = seededRandom(seed);
-    let arr = [];
-    for(let i=0;i<10000;i++) arr.push(i.toString().padStart(4,'0'));
-    for(let i=arr.length-1;i>0;i--){
-      const j = Math.floor(rng()*(i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
-    }
-    const map=new Map(), rmap=new Map();
-    arr.forEach((v,i)=>{
-      map.set(i.toString().padStart(4,'0'),v);
-      rmap.set(v,i.toString().padStart(4,'0'));
-    });
-    return {map,rmap};
-  }
-
-  const {map: encMap, rmap: decMap} = generateMapping(key);
 
   function encryptADM(left, right){
     const last4 = left.slice(-4);
@@ -230,7 +212,6 @@
     return {left,right};
   }
 
-  // --- UI逻辑 ---
   const modeRadios=document.querySelectorAll('input[name="operation"]');
   const prefixInput=document.getElementById('prefixInput');
   const mainInput=document.getElementById('mainInput');
@@ -262,7 +243,7 @@
       computeBtn.innerText='🔓 计算';
       computeBtn.style.background='#ff7043';
     }
-    ioContainer.style.background='transparent';
+    ioContainer.style.background='#fdfdfd';
   }
 
   modeRadios.forEach(r=>{
@@ -302,9 +283,9 @@
   }
 
   function flash(color){
-    ioContainer.style.background=color+'55';
-    setTimeout(()=>{ioContainer.style.background=color+'33';},300);
-    setTimeout(()=>{ioContainer.style.background='transparent';},1000);
+    ioContainer.style.background=color+'33';
+    setTimeout(()=>{ioContainer.style.background=color+'22';},300);
+    setTimeout(()=>{ioContainer.style.background='#fdfdfd';},1000);
   }
 
   const logEl=document.getElementById('log');
