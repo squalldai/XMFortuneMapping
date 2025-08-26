@@ -90,7 +90,6 @@ function encryptADM(left,right){
   const right4 = right;
   let num = parseInt(left4 + right4);
 
-  // 种子扰动 + 非线性多轮
   const seed = stringToSeed(seedKey + left4 + right4);
   const rng = mulberry32(seed);
   num = num ^ Math.floor(rng()*99999999);
@@ -112,19 +111,15 @@ function decryptADM(code,leftFixed='7688'){
     num = num*charLen + chars.indexOf(code[i]);
   }
 
-  // 反向多轮（严格可逆）
   num = ((num<<29)|(num>>>3))&0xffffffff;
   num = ((num + 100000000 -31)*modInverse(17,100000000))%100000000;
 
-  // 此处仅示意可逆性，里程碑算法解密实际根据种子逆向
-  // 生成左四位与右四位
   const combined = num.toString().padStart(8,'0');
   const left = leftFixed + combined.slice(0,4);
   const right = combined.slice(4,8);
   return {left,right};
 }
 
-// --- 求模逆元 (扩展欧几里得算法) ---
 function modInverse(a,m){
   let m0=m,x0=0,x1=1;
   if(m==1) return 0;
@@ -180,7 +175,7 @@ updateUI();
 
 function flash(color){
   ioContainer.style.background=color+'33';
-    setTimeout(()=>{ioContainer.style.background=color+'22';},300);
+  setTimeout(()=>{ioContainer.style.background=color+'22';},300);
   setTimeout(()=>{ioContainer.style.background='#fdfdfd';},1000);
 }
 
@@ -212,8 +207,8 @@ function compute(){
         return;
       }
       const {left,right}=decryptADM(code);
-      prefixOutput.value=left;
-      output.value=right;
+      prefixOutput.value=left; // 8位数字，不含 -
+      output.value=right;     // 4位数字
       flash('#ff7043');
       log(op,'HT-',code,left,right);
     }
