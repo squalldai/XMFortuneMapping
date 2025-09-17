@@ -1,15 +1,15 @@
-// ADMALGORITHEM.js
-// 里程碑1算法（Feistel + 加法模）
-// 保持和 v3.0 模拟验证一致的实现，严格可逆，种子固定：ht1416
+// ADM.js
+// 里程碑1算法对外接口：admEncrypt(leftFull, right4) / admDecrypt(code)
+// 内部实现：Feistel (addition-based) + mulberry32-based round function
+// 种子：ht1416，ROUNDS = 4，BASE = 10000
 
-const ADMAlgorithm = (function(){
+const ADM = (function(){
   const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ23456789';
   const CHARLEN = chars.length;
   const seedKey = 'ht1416';
   const ROUNDS = 4;
-  const BASE = 10000; // each half-block range 0..9999
+  const BASE = 10000;
 
-  // string -> 32-bit seed (deterministic)
   function stringToSeed(str){
     let hash = 0;
     for(let i=0;i<str.length;i++){
@@ -18,7 +18,6 @@ const ADMAlgorithm = (function(){
     return hash >>> 0;
   }
 
-  // mulberry32 PRNG
   function mulberry32(a){
     return function(){
       a = (a + 0x6D2B79F5) & 0xFFFFFFFF;
@@ -29,15 +28,13 @@ const ADMAlgorithm = (function(){
     };
   }
 
-  // round function F(R, roundIdx)
   function F_func(R, roundIdx){
     const s = seedKey + '-' + roundIdx + '-' + R;
     const sd = stringToSeed(s);
     const rng = mulberry32(sd);
-    return Math.floor(rng() * BASE); // 0..BASE-1
+    return Math.floor(rng() * BASE);
   }
 
-  // Feistel encrypt (addition-based, invertible)
   function feistel_encrypt(combined){
     let L = Math.floor(combined / BASE);
     let R = combined % BASE;
@@ -50,7 +47,6 @@ const ADMAlgorithm = (function(){
     return L * BASE + R;
   }
 
-  // Feistel decrypt (inverse)
   function feistel_decrypt(permuted){
     let L = Math.floor(permuted / BASE);
     let R = permuted % BASE;
@@ -63,7 +59,6 @@ const ADMAlgorithm = (function(){
     return L * BASE + R;
   }
 
-  // number -> 6-char code (least-significant first like earlier implementations)
   function numToCode(num){
     let tmp = num;
     let out = '';
@@ -82,16 +77,17 @@ const ADMAlgorithm = (function(){
     return num;
   }
 
-  // public API: encrypt(leftFull, right4) -> returns 6-char code (no HT- prefix)
-  function encrypt(leftFull, right4){
+  // 对外接口（保持与 index.html 期望一致的行为）
+  function admEncrypt(leftFull, right4){
+    // leftFull: e.g. "76880800"  (前四位7688固定)
+    // right4: e.g. "1111"
     const left4 = leftFull.slice(-4);
     const combined = parseInt(left4 + right4, 10);
     const perm = feistel_encrypt(combined);
-    return numToCode(perm);
+    return numToCode(perm); // 返回 6 字符（不带 "HT-" 前缀）
   }
 
-  // public API: decrypt(code) -> returns {left: '7688xxxx', right: 'yyyy'}
-  function decrypt(code){
+  function admDecrypt(code){
     const perm = codeToNum(code);
     const original = feistel_decrypt(perm);
     const combinedStr = String(original).padStart(8, '0');
@@ -100,8 +96,20 @@ const ADMAlgorithm = (function(){
     return { left: '7688' + left4, right: right4 };
   }
 
+  // 导出
   return {
-    encrypt,
-    decrypt
+    admEncrypt,
+    admDecrypt
   };
 })();
+
+// 兼容旧引用（如果 index.html 之前引用 ADMAlgorithm.encrypt）
+if(typeof window !== 'undefined'){
+  window.ADMAlgorithm = {
+    encrypt: function(leftFull, right4){ return ADM.admEncrypt(leftFull, right4); },
+    decrypt: function(code){ return ADM.admDecrypt(code); }
+  };
+  // 也导出新命名
+  window.admEncrypt = ADM.admEncrypt;
+  window.admDecrypt = ADM.admDecrypt;
+}
