@@ -29,17 +29,16 @@ function sensientEncrypt(input) {
         temp = Math.floor(temp / SENSIENT_CHARS.length);
     }
 
-    return "HT-" + result;
+    return result; // ❌ 不要加 HT-
 }
 
 // 解密函数
 function sensientDecrypt(input) {
-    if (!/^HT\-[A-Z0-9]{6}$/.test(input)) {
-        throw new Error("输入必须是 HT- 加 6位字母或数字");
+    if (!/^[A-Z0-9]{6}$/.test(input)) {
+        throw new Error("输入必须是 6位字母或数字");
     }
 
-    // 暂时采用遍历方式恢复原始输入（保证可逆）
-    // 实际应用中可以优化
+    // 遍历法恢复
     for (let d1 = 0; d1 <= 99; d1++) {
         for (let l1 = 65; l1 <= 90; l1++) {
             for (let l2 = 65; l2 <= 90; l2++) {
@@ -60,6 +59,6 @@ function sensientDecrypt(input) {
     throw new Error("未找到对应解密结果");
 }
 
-// 挂载到 window，便于 index.html 调用
+// 挂载到 window
 window.sensientEncrypt = sensientEncrypt;
 window.sensientDecrypt = sensientDecrypt;
