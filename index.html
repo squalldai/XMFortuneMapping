@@ -1,242 +1,91 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>华添香精编号加密解密工具 v2.9 (修复)</title>
-<style>
-body{font-family:Arial,Helvetica,sans-serif;background:#f0f2f5;margin:0;padding:0;text-align:center}
-header{background:linear-gradient(135deg,#ffecd2,#fcb69f);height:10vh;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#333}
-.container{max-width:500px;margin:10px auto;padding:16px;background:#fff;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:14px}
-.description{font-size:0.8rem;color:#555;font-style:italic;background:#fafafa;padding:6px;border-radius:6px}
-.section-title{font-size:0.95rem;font-weight:700;margin:6px 0 4px 0;color:#333}
-.radio-group{display:flex;justify-content:center;gap:12px;margin-bottom:6px}
-.io-block{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%}
-.io-label{font-weight:700;color:#444}
-.input-row{display:flex;gap:6px;width:100%}
-.prefix-input,input[type=text]{border-radius:6px;border:1px solid #ccc;padding:8px;font-size:1rem;text-align:center}
-.prefix-input{width:90px}
-input[type=text]{flex:1}
-.buttons{display:flex;justify-content:center;margin:8px 0}
-button{padding:8px 16px;border:none;border-radius:8px;font-size:0.95rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
-button:disabled{opacity:.5;cursor:not-allowed}
-.flash-container{border-radius:12px;padding:12px;transition:background .3s;background:#fdfdfd}
-#log{margin-top:8px;text-align:left;font-size:0.8rem;max-height:160px;overflow-y:auto;border-top:1px solid #eee;padding-top:6px;color:#333}
-</style>
+  <meta charset="UTF-8">
+  <title>加解密工具 - 里程碑1UI</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container { max-width: 600px; margin: auto; }
+    .section { margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { padding: 8px; margin-top: 5px; width: 100%; }
+    .radio-group { display: flex; gap: 20px; margin: 10px 0; }
+    .output { margin-top: 10px; font-weight: bold; }
+  </style>
 </head>
 <body>
-<header>华添香精编号加密解密工具 v2.9 (修复)</header>
-<div class="container">
-  <div class="description">
-    加密：输入左 8 位数字（前四位固定 7688）、右 4 位数字 → 输出 6 位字符。<br>
-    解密：输入 6 位字符 → 输出左 7688+4 位、右 4 位数字。<br>
-    使用里程碑（Feistel + 加法模）可逆算法，种子固定：ht1416，已修复可逆性问题。
-  </div>
+  <div class="container">
+    <h2>加解密工具 - 里程碑1UI</h2>
 
-  <div class="section-title">模式</div>
-  <div class="radio-group">
-    <label><input type="radio" name="mode" value="ADM" checked> ADM</label>
-    <label style="color: gray;"><input type="radio" name="mode" value="other" disabled> 其它(开发中)</label>
-  </div>
-
-  <div class="section-title">操作</div>
-  <div class="radio-group">
-    <label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
-    <label><input type="radio" name="operation" value="decrypt"> 解密</label>
-  </div>
-
-  <div class="flash-container" id="ioContainer">
-    <div class="io-block">
-      <span class="io-label">输入</span>
-      <div class="input-row">
-        <input type="text" id="prefixInput" class="prefix-input" value="76880800">
-        <input type="text" id="mainInput" maxlength="4" placeholder="4位数字/6位字符">
+    <div class="section">
+      <label>选择算法来源:</label>
+      <div class="radio-group">
+        <label><input type="radio" name="algoSource" value="ADM" checked> ADM</label>
+        <label><input type="radio" name="algoSource" value="SENSIENT"> 森鑫</label>
       </div>
     </div>
 
-    <div class="buttons">
-      <button id="computeBtn" onclick="compute()">🔒 计算</button>
+    <div class="section">
+      <label>模式选择:</label>
+      <select id="mode">
+        <option value="encrypt">加密</option>
+        <option value="decrypt">解密</option>
+      </select>
     </div>
 
-    <div class="io-block">
-      <span class="io-label">输出</span>
-      <div class="input-row">
-        <input type="text" id="prefixOutput" class="prefix-input" value="HT-" readonly>
-        <input type="text" id="output" readonly placeholder="6位字符/解密右侧4位">
-      </div>
+    <div class="section">
+      <label for="leftInput">左侧输入:</label>
+      <input type="text" id="leftInput" placeholder="例如: 76880800">
+    </div>
+
+    <div class="section">
+      <label for="rightInput">右侧输入:</label>
+      <input type="text" id="rightInput" placeholder="加密模式下输入4位数字 / 解密模式下输入6位编码">
+    </div>
+
+    <div class="section">
+      <button id="runButton">执行</button>
+    </div>
+
+    <div class="section">
+      <label>输出结果:</label>
+      <div id="output" class="output"></div>
     </div>
   </div>
 
-  <div id="log"></div>
-</div>
+  <script src="ADMALGORITHEM.js"></script>
+  <script src="sensient.js"></script>
+  <script>
+    const runButton = document.getElementById('runButton');
+    const modeSelect = document.getElementById('mode');
+    const leftInput = document.getElementById('leftInput');
+    const rightInput = document.getElementById('rightInput');
+    const outputDiv = document.getElementById('output');
 
-<script>
-// ---- 参数 ----
-const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ23456789';
-const CHARLEN = chars.length;
-const seedKey = 'ht1416';
-const ROUNDS = 4;
-const BASE = 10000; // 每半块为 0..9999
+    runButton.addEventListener('click', () => {
+      const algoSource = document.querySelector('input[name="algoSource"]:checked').value;
+      const mode = modeSelect.value;
+      const left = leftInput.value.trim();
+      const right = rightInput.value.trim();
 
-// ---- 辅助：string -> 32-bit seed (与 Python 的实现一致思路) ----
-function stringToSeed(str){
-  let hash = 0;
-  for(let i=0;i<str.length;i++){
-    hash = (hash * 31 + str.charCodeAt(i)) & 0xFFFFFFFF;
-  }
-  return hash >>> 0;
-}
+      let result = '';
 
-// ---- mulberry32 PRNG (确定性，可在 JS 中同步使用) ----
-function mulberry32(a){
-  return function(){
-    a = (a + 0x6D2B79F5) & 0xFFFFFFFF;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1) & 0xFFFFFFFF;
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61) & 0xFFFFFFFF;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+      if (algoSource === 'ADM') {
+        if (mode === 'encrypt') {
+          result = ADMAlgorithm.encrypt(left, right);
+        } else {
+          result = ADMAlgorithm.decrypt(left, right);
+        }
+      } else if (algoSource === 'SENSIENT') {
+        if (mode === 'encrypt') {
+          result = SensientAlgorithm.encrypt(left, right);
+        } else {
+          result = SensientAlgorithm.decrypt(left, right);
+        }
+      }
 
-// ---- Feistel 的 round function F(R, round) ----
-function F_func(R, roundIdx){
-  const s = `${seedKey}-${roundIdx}-${R}`;
-  const sd = stringToSeed(s);
-  const rng = mulberry32(sd);
-  return Math.floor(rng() * BASE); // 0..BASE-1
-}
-
-// ---- Feistel 加法版本（严格可逆） ----
-function feistel_encrypt(combined){
-  let L = Math.floor(combined / BASE);
-  let R = combined % BASE;
-  for(let r=0;r<ROUNDS;r++){
-    const F = F_func(R, r);
-    const newL = R;
-    const newR = (L + F) % BASE; // 加法模 BASE（可逆）
-    L = newL; R = newR;
-  }
-  return L * BASE + R;
-}
-
-function feistel_decrypt(permuted){
-  let L = Math.floor(permuted / BASE);
-  let R = permuted % BASE;
-  for(let r=ROUNDS-1;r>=0;r--){
-    const R0 = L;
-    const F = F_func(R0, r);
-    const L0 = (R - F + BASE) % BASE; // 逆向：减去 F
-    L = L0; R = R0;
-  }
-  return L * BASE + R;
-}
-
-// ---- 编码 / 解码（6字符） ----
-function numToCode(num){
-  let tmp = num;
-  let out = '';
-  for(let i=0;i<6;i++){
-    out += chars[tmp % CHARLEN];
-    tmp = Math.floor(tmp / CHARLEN);
-  }
-  return out;
-}
-function codeToNum(code){
-  let num = 0;
-  for(let i=code.length-1;i>=0;i--){
-    num = num * CHARLEN + chars.indexOf(code[i]);
-  }
-  return num;
-}
-
-// ---- 封装：encryptADM / decryptADM ----
-function encryptADM(leftFull, right4){
-  const left4 = leftFull.slice(-4);
-  const combined = parseInt(left4 + right4, 10);
-  const perm = feistel_encrypt(combined);
-  return numToCode(perm);
-}
-function decryptADM(code){
-  const perm = codeToNum(code);
-  const original = feistel_decrypt(perm);
-  const combinedStr = String(original).padStart(8,'0');
-  const left4 = combinedStr.slice(0,4);
-  const right4 = combinedStr.slice(4,8);
-  return { left: '7688' + left4, right: right4 };
-}
-
-// ---- UI 交互，保持 2.5 风格 ----
-const modeRadios = document.querySelectorAll('input[name="operation"]');
-const prefixInput = document.getElementById('prefixInput');
-const mainInput = document.getElementById('mainInput');
-const prefixOutput = document.getElementById('prefixOutput');
-const output = document.getElementById('output');
-const ioContainer = document.getElementById('ioContainer');
-const logEl = document.getElementById('log');
-
-function updateUI(){
-  const op = document.querySelector('input[name="operation"]:checked').value;
-  if(op === 'encrypt'){
-    prefixInput.value = '76880800';
-    prefixInput.readOnly = false;
-    mainInput.value = '';
-    mainInput.maxLength = 4;
-    mainInput.placeholder = '4位数字';
-    prefixOutput.value = 'HT-';
-    output.value = '';
-    document.getElementById('computeBtn')?.setAttribute('style','background:#4cafef');
-  }else{
-    prefixInput.value = 'HT-';
-    prefixInput.readOnly = true;
-    mainInput.value = '';
-    mainInput.maxLength = 6;
-    mainInput.placeholder = '6位字符';
-    prefixOutput.value = '';
-    output.value = '';
-    document.getElementById('computeBtn')?.setAttribute('style','background:#ff7043');
-  }
-  ioContainer.style.background = '#fdfdfd';
-}
-modeRadios.forEach(r => r.addEventListener('change', updateUI));
-updateUI();
-
-function flash(color){
-  ioContainer.style.background = color + '33';
-  setTimeout(()=> ioContainer.style.background = color + '22', 300);
-  setTimeout(()=> ioContainer.style.background = '#fdfdfd', 1000);
-}
-function log(op,left,right,outLeft,outRight){
-  const time = new Date().toLocaleTimeString();
-  const msg = `[${time}] 操作:${op} 输入:${left}+${right} → 输出:${outLeft}+${outRight}`;
-  logEl.innerHTML = `<div>${msg}</div>` + logEl.innerHTML;
-}
-
-function compute(){
-  const op = document.querySelector('input[name="operation"]:checked').value;
-  try{
-    if(op === 'encrypt'){
-      const left = prefixInput.value;
-      const right = mainInput.value;
-      if(!/^\d{4}$/.test(right)){ alert('请输入4位数字'); return; }
-      const code = encryptADM(left, right);
-      prefixOutput.value = 'HT-';
-      output.value = code;
-      flash('#4cafef');
-      log('encrypt', left, right, 'HT-', code);
-    }else{
-      const code = mainInput.value;
-      if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code)){ alert('请输入6位字符'); return; }
-      const {left, right} = decryptADM(code);
-      prefixOutput.value = left; // 8 位不带 '-' 
-      output.value = right;
-      flash('#ff7043');
-      log('decrypt', 'HT-', code, left, right);
-    }
-  }catch(e){
-    console.error(e);
-    alert('操作失败：' + (e && e.message ? e.message : '未知错误'));
-  }
-}
-</script>
+      outputDiv.textContent = result;
+    });
+  </script>
 </body>
 </html>
