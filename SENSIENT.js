@@ -1,63 +1,71 @@
-// 森馨算法 (Sensient Algorithm)
 // 固定种子
 const SENSIENT_SEED = "ht1416";
-const SENSIENT_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-// 简单扰动哈希，保持稳定
-function sensientHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = (hash * 31 + str.charCodeAt(i) + SENSIENT_SEED.charCodeAt(i % SENSIENT_SEED.length)) % 1000000;
+// 生成伪随机数（确定性，基于种子）
+function sensientRandom(seed) {
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) {
+        h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
     }
-    return hash;
+    return function () {
+        h ^= h << 13;
+        h ^= h >> 17;
+        h ^= h << 5;
+        return (h >>> 0) / 4294967296;
+    }
 }
 
-// 加密
+// 生成编码表（严格双射）
+function sensientGenerateTables() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const rand = sensientRandom(SENSIENT_SEED);
+    let arr = chars.split("");
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return { encode: arr, decode: arr.reduce((m, c, i) => { m[c] = i; return m; }, {}) };
+}
+
+const sensientTables = sensientGenerateTables();
+
+// 编码8位 → 6位
 function sensientEncrypt(input) {
     if (!/^[0-9]{2}[A-Z]{2}[0-9]{4}$/.test(input)) {
-        throw new Error("输入必须是 2数字+2字母+4数字 (8位)");
+        return "输入必须是 2数字+2字母+4数字";
     }
+    const base36Val = parseInt(input.split("").map(ch => {
+        if (/[0-9]/.test(ch)) return ch;
+        return (ch.charCodeAt(0) - 55).toString();
+    }).join(""), 10);
 
-    const hash = sensientHash(input);
-
-    // 转换为 6 位字母/数字
-    let result = "";
-    let temp = hash;
+    let output = "";
+    let val = base36Val;
     for (let i = 0; i < 6; i++) {
-        result = SENSIENT_CHARS[temp % SENSIENT_CHARS.length] + result;
-        temp = Math.floor(temp / SENSIENT_CHARS.length);
+        output = sensientTables.encode[val % 36] + output;
+        val = Math.floor(val / 36);
     }
-
-    return "HT-" + result;
+    return "HT-" + output;
 }
 
-// 解密
+// 解码6位 → 8位
 function sensientDecrypt(input) {
-    if (!/^HT\-[A-Z0-9]{6}$/.test(input)) {
-        throw new Error("输入必须是 HT- 加 6位字母或数字");
+    if (!/^HT-[A-Z0-9]{6}$/.test(input)) {
+        return "输入必须是 HT- 开头 + 6位字母数字";
+    }
+    const code = input.slice(3);
+    let val = 0;
+    for (let i = 0; i < code.length; i++) {
+        val = val * 36 + sensientTables.decode[code[i]];
     }
 
-    // 遍历尝试所有可能的输入，找到匹配的
-    for (let d1 = 0; d1 <= 99; d1++) {
-        for (let l1 = 65; l1 <= 90; l1++) {
-            for (let l2 = 65; l2 <= 90; l2++) {
-                for (let d2 = 0; d2 <= 9999; d2++) {
-                    const candidate =
-                        d1.toString().padStart(2, "0") +
-                        String.fromCharCode(l1) +
-                        String.fromCharCode(l2) +
-                        d2.toString().padStart(4, "0");
+    let numStr = val.toString();
+    while (numStr.length < 8) numStr = "0" + numStr;
 
-                    if (sensientEncrypt(candidate) === input) {
-                        return candidate;
-                    }
-                }
-            }
-        }
-    }
-    throw new Error("未找到对应解密结果");
+    // 转换成原始格式（2数字+2字母+4数字）
+    let part1 = numStr.slice(0, 2);
+    let part2 = String.fromCharCode(parseInt(numStr.slice(2, 4)) + 55);
+    let part3 = numStr.slice(4);
+
+    return part1 + part2 + part3;
 }
-
-// 挂载到 window，供 index.html 调用
-window.sensientEncrypt = sensientEncrypt;
-window.sensientDecrypt = sensientDecrypt;
