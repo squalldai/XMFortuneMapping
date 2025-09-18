@@ -26,11 +26,11 @@ button:disabled { opacity:.5; cursor:not-allowed; }
 </style>
 </head>
 <body>
-<header>华添香精编号加解密工具 v3.2</header>
+<header>华添香精编号加解密工具 v3.3</header>
 
 <div class="container">
   <div class="description">
-    <div><strong>说明</strong>：ADM 保持原有 UI/逻辑。森鑫（Sensient）为 8 位输入（格式：2数字+2字母+4数字）↔ 6 位编码，种子固定 <code>ht1416</code>。</div>
+    <div><strong>说明</strong>：ADM: 8位数字 (76880800) + 4位数字合并成 8位数，Feistel 网络 (4轮)，L/R 分离 + 轮函数 F(种子+轮次+R)。森鑫（Sensient）为 8 位输入（格式：2数字+2字母+4数字）↔ 6 位编码。种子固定 <code>ht1416</code>。</div>
     <div class="small">切换算法后输入/输出框会自动适配对应校验规则。</div>
   </div>
 
