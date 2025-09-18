@@ -1,10 +1,9 @@
+// 森馨算法 (Sensient Algorithm)
 // 固定种子
 const SENSIENT_SEED = "ht1416";
-
-// 映射表字符集
 const SENSIENT_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-// 简单可逆哈希（扰动 + 保证可逆性）
+// 简单扰动哈希，保持稳定
 function sensientHash(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -13,7 +12,7 @@ function sensientHash(str) {
     return hash;
 }
 
-// 加密函数
+// 加密
 function sensientEncrypt(input) {
     if (!/^[0-9]{2}[A-Z]{2}[0-9]{4}$/.test(input)) {
         throw new Error("输入必须是 2数字+2字母+4数字 (8位)");
@@ -21,7 +20,7 @@ function sensientEncrypt(input) {
 
     const hash = sensientHash(input);
 
-    // 转换为 6 位输出
+    // 转换为 6 位字母/数字
     let result = "";
     let temp = hash;
     for (let i = 0; i < 6; i++) {
@@ -29,16 +28,16 @@ function sensientEncrypt(input) {
         temp = Math.floor(temp / SENSIENT_CHARS.length);
     }
 
-    return result; // ❌ 不要加 HT-
+    return "HT-" + result;
 }
 
-// 解密函数
+// 解密
 function sensientDecrypt(input) {
-    if (!/^[A-Z0-9]{6}$/.test(input)) {
-        throw new Error("输入必须是 6位字母或数字");
+    if (!/^HT\-[A-Z0-9]{6}$/.test(input)) {
+        throw new Error("输入必须是 HT- 加 6位字母或数字");
     }
 
-    // 遍历法恢复
+    // 遍历尝试所有可能的输入，找到匹配的
     for (let d1 = 0; d1 <= 99; d1++) {
         for (let l1 = 65; l1 <= 90; l1++) {
             for (let l2 = 65; l2 <= 90; l2++) {
@@ -59,6 +58,6 @@ function sensientDecrypt(input) {
     throw new Error("未找到对应解密结果");
 }
 
-// 挂载到 window
+// 挂载到 window，供 index.html 调用
 window.sensientEncrypt = sensientEncrypt;
 window.sensientDecrypt = sensientDecrypt;
