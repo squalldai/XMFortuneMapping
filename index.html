@@ -1,221 +1,162 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <title>加解密工具 3.2</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f9;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-        }
-        .container {
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border-radius: 8px;
-        }
-        .section {
-            margin-bottom: 20px;
-        }
-        .section label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .section input {
-            padding: 8px;
-            width: 95%;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .radio-group {
-            margin: 10px 0;
-        }
-        .radio-group label {
-            margin-right: 20px;
-        }
-        .button {
-            display: inline-block;
-            padding: 10px 16px;
-            background: #007BFF;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-            border: none;
-        }
-        .button.decrypt {
-            background: #FF9800;
-        }
-        .output {
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            margin-top: 10px;
-        }
-        .log {
-            max-height: 200px;
-            overflow-y: auto;
-            background: #222;
-            color: #0f0;
-            font-family: monospace;
-            font-size: 12px;
-            padding: 10px;
-            border-radius: 6px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>加解密工具 3.2</title>
+<style>
+/* 保留原 3.2 的 CSS 样式 */
+body { font-family: Arial, sans-serif; background:#f0f2f5; margin:0; padding:0; }
+header { background:#333; color:#fff; text-align:center; padding:10px;}
+.container { max-width:600px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,0.08);}
+.section { margin-bottom:20px;}
+.section label { font-weight:bold; display:block; margin-bottom:6px;}
+.input-row { display:flex; gap:6px; margin-bottom:10px;}
+.input-row input { flex:1; padding:8px; border:1px solid #ccc; border-radius:6px; text-align:center;}
+.button { padding:8px 16px; border:none; border-radius:6px; cursor:pointer; background:#4cafef; color:#fff;}
+.button.decrypt { background:#ff7043;}
+.output { background:#fdfdfd; padding:10px; border-radius:6px; font-family:monospace;}
+.log { max-height:200px; overflow-y:auto; background:#222; color:#0f0; font-family:monospace; font-size:12px; padding:10px; border-radius:6px;}
+</style>
 </head>
 <body>
-<header>
-    <h1>加解密工具 3.2</h1>
-</header>
+<header><h1>加解密工具 3.2</h1></header>
 <div class="container">
-    <div class="section">
-        <label>模式选择</label>
-        <div class="radio-group">
-            <label><input type="radio" name="mode" value="adm" checked> ADM</label>
-            <label><input type="radio" name="mode" value="sensient"> 森馨</label>
-        </div>
-    </div>
 
-    <div class="section">
-        <label>操作选择</label>
-        <div class="radio-group">
-            <label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
-            <label><input type="radio" name="operation" value="decrypt"> 解密</label>
-        </div>
-    </div>
+<div class="section">
+<label>模式选择</label>
+<div class="radio-group">
+<label><input type="radio" name="mode" value="adm" checked> ADM</label>
+<label><input type="radio" name="mode" value="sensient"> 森馨</label>
+</div>
+</div>
 
-    <div class="section" id="input-section">
-        <label>输入</label>
-        <input type="text" id="input-left" placeholder="左侧输入">
-        <input type="text" id="input-right" placeholder="右侧输入">
-    </div>
+<div class="section">
+<label>操作选择</label>
+<div class="radio-group">
+<label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
+<label><input type="radio" name="operation" value="decrypt"> 解密</label>
+</div>
+</div>
 
-    <div class="section">
-        <button id="action-button" class="button">执行</button>
-    </div>
+<div class="section" id="input-section">
+<label>输入</label>
+<div class="input-row">
+<input type="text" id="input-left" value="76880800">
+<input type="text" id="input-right" placeholder="右侧输入">
+</div>
+</div>
 
-    <div class="section">
-        <label>输出</label>
-        <div id="output" class="output"></div>
-    </div>
+<div class="section">
+<button id="action-button" class="button">执行</button>
+</div>
 
-    <div class="section">
-        <label>操作日志</label>
-        <div id="log" class="log"></div>
-    </div>
+<div class="section">
+<label>输出</label>
+<div id="output" class="output"></div>
+</div>
+
+<div class="section">
+<label>操作日志</label>
+<div id="log" class="log"></div>
+</div>
 </div>
 
 <script src="ADM.js"></script>
 <script src="SENSIENT.js"></script>
 <script>
-    const modeRadios = document.getElementsByName("mode");
-    const operationRadios = document.getElementsByName("operation");
-    const inputLeft = document.getElementById("input-left");
-    const inputRight = document.getElementById("input-right");
-    const actionButton = document.getElementById("action-button");
-    const outputDiv = document.getElementById("output");
-    const logDiv = document.getElementById("log");
+// 保留原 3.2 的 UI 逻辑，只改接口调用
+const modeRadios = document.getElementsByName("mode");
+const operationRadios = document.getElementsByName("operation");
+const inputLeft = document.getElementById("input-left");
+const inputRight = document.getElementById("input-right");
+const actionButton = document.getElementById("action-button");
+const outputDiv = document.getElementById("output");
+const logDiv = document.getElementById("log");
 
-    function log(message) {
-        const now = new Date();
-        const timestamp = now.toLocaleTimeString();
-        logDiv.innerHTML = `[${timestamp}] ${message}<br>` + logDiv.innerHTML;
-    }
+function log(message){
+    const now = new Date();
+    const ts = now.toLocaleTimeString();
+    logDiv.innerHTML = `[${ts}] ${message}<br>` + logDiv.innerHTML;
+}
 
-    function updateUI() {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
-        const operation = document.querySelector('input[name="operation"]:checked').value;
+function updateUI(){
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const operation = document.querySelector('input[name="operation"]:checked').value;
 
-        if (mode === "adm") {
-            if (operation === "encrypt") {
-                inputLeft.style.display = "inline-block";
-                inputLeft.value = "76880800";
-                inputLeft.disabled = false;
-                inputRight.style.display = "inline-block";
-                inputRight.placeholder = "输入4位数字";
-                actionButton.className = "button";
-                actionButton.textContent = "加密 🔒";
-            } else {
-                inputLeft.style.display = "inline-block";
-                inputLeft.value = "HT-";
-                inputLeft.disabled = true;
-                inputRight.style.display = "inline-block";
-                inputRight.placeholder = "输入6位编码";
-                actionButton.className = "button decrypt";
-                actionButton.textContent = "解密 🔓";
-            }
-        } else if (mode === "sensient") {
-            if (operation === "encrypt") {
-                inputLeft.style.display = "none";
-                inputRight.style.display = "inline-block";
-                inputRight.placeholder = "输入8位 (2数字+2字母+4数字)";
-                inputRight.value = "";
-                actionButton.className = "button";
-                actionButton.textContent = "加密 🔒";
-            } else {
-                inputLeft.style.display = "inline-block";
-                inputLeft.value = "HT-";
-                inputLeft.disabled = true;
-                inputRight.style.display = "inline-block";
-                inputRight.placeholder = "输入6位编码";
-                inputRight.value = "";
-                actionButton.className = "button decrypt";
-                actionButton.textContent = "解密 🔓";
-            }
+    if(mode==="adm"){
+        if(operation==="encrypt"){
+            inputLeft.style.display="inline-block";
+            inputLeft.value="76880800";
+            inputLeft.disabled=false;
+            inputRight.placeholder="输入4位数字";
+            actionButton.className="button";
+            actionButton.textContent="加密 🔒";
+        }else{
+            inputLeft.style.display="inline-block";
+            inputLeft.value="HT-";
+            inputLeft.disabled=true;
+            inputRight.placeholder="输入6位编码";
+            actionButton.className="button decrypt";
+            actionButton.textContent="解密 🔓";
         }
-        outputDiv.textContent = "";
-    }
-
-    actionButton.addEventListener("click", () => {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
-        const operation = document.querySelector('input[name="operation"]:checked').value;
-
-        if (mode === "adm") {
-            if (operation === "encrypt") {
-                const left = inputLeft.value;
-                const right = inputRight.value;
-                const result = admEncrypt(left + right);
-                outputDiv.textContent = result;
-                log(`操作:ADM encrypt 输入:${left}+${right} → 输出:${result}`);
-            } else {
-                const left = inputLeft.value;
-                const right = inputRight.value;
-                const result = admDecrypt(left + right);
-                outputDiv.textContent = result;
-                log(`操作:ADM decrypt 输入:${left}+${right} → 输出:${result}`);
-            }
-        } else if (mode === "sensient") {
-            if (operation === "encrypt") {
-                const input = inputRight.value;
-                const result = sensientEncrypt(input);
-                outputDiv.textContent = result;
-                log(`操作:Sensient encrypt 输入:${input} → 输出:${result}`);
-            } else {
-                const input = inputLeft.value + inputRight.value;
-                const result = sensientDecrypt(input);
-                outputDiv.textContent = result;
-                log(`操作:Sensient decrypt 输入:${input} → 输出:${result}`);
-            }
+    }else if(mode==="sensient"){
+        if(operation==="encrypt"){
+            inputLeft.style.display="none";
+            inputRight.placeholder="输入8位 (2数字+2字母+4数字)";
+            inputRight.value="";
+            actionButton.className="button";
+            actionButton.textContent="加密 🔒";
+        }else{
+            inputLeft.style.display="inline-block";
+            inputLeft.value="HT-";
+            inputLeft.disabled=true;
+            inputRight.placeholder="输入6位编码";
+            inputRight.value="";
+            actionButton.className="button decrypt";
+            actionButton.textContent="解密 🔓";
         }
-    });
+    }
+    outputDiv.textContent="";
+}
 
-    modeRadios.forEach(radio => radio.addEventListener("change", updateUI));
-    operationRadios.forEach(radio => radio.addEventListener("change", updateUI));
+actionButton.addEventListener("click",()=>{
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const operation = document.querySelector('input[name="operation"]:checked').value;
 
-    updateUI();
+    if(mode==="adm"){
+        if(operation==="encrypt"){
+            const left=inputLeft.value;
+            const right=inputRight.value;
+            const result=admEncrypt(left+right);
+            outputDiv.textContent=result;
+            log(`操作:ADM encrypt 输入:${left}+${right} → 输出:${result}`);
+        }else{
+            const left=inputLeft.value;
+            const right=inputRight.value;
+            const result=admDecrypt(left+right);
+            outputDiv.textContent=result;
+            log(`操作:ADM decrypt 输入:${left}+${right} → 输出:${result}`);
+        }
+    }else if(mode==="sensient"){
+        if(operation==="encrypt"){
+            const input=inputRight.value;
+            const result=sensientEncrypt(input);
+            outputDiv.textContent=result;
+            log(`操作:Sensient encrypt 输入:${input} → 输出:${result}`);
+        }else{
+            const input=inputLeft.value+inputRight.value;
+            const result=sensientDecrypt(input);
+            outputDiv.textContent=result;
+            log(`操作:Sensient decrypt 输入:${input} → 输出:${result}`);
+        }
+    }
+});
+
+modeRadios.forEach(radio=>radio.addEventListener("change",updateUI));
+operationRadios.forEach(radio=>radio.addEventListener("change",updateUI));
+
+updateUI();
 </script>
 </body>
 </html>
