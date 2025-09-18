@@ -49,8 +49,6 @@ button:disabled { opacity:.5; cursor:not-allowed; }
   <div class="flash-container" id="ioContainer">
     <div class="io-block">
       <span class="io-label">输入</span>
-
-      <!-- input row: for ADM show two inputs (prefixInput + mainInput); for SENSIENT show either single mainInput (encrypt) or prefixInput 'HT-' plus mainInput (decrypt) -->
       <div class="input-row" id="inputRow">
         <input type="text" id="prefixInput" class="prefix-input" value="76880800" />
         <input type="text" id="mainInput" maxlength="4" placeholder="4位数字" />
@@ -74,17 +72,10 @@ button:disabled { opacity:.5; cursor:not-allowed; }
   <div id="log"></div>
 </div>
 
-<!-- 请把 ADM.js 放在同目录 -->
 <script src="ADM.js"></script>
 <script src="SENSIENT.js"></script>
 
 <script>
-/* UI behavior:
- - ADM: unchanged (encrypt: left=7688xxxx editable + right 4 digits; decrypt: left=HT- fixed, right 6-char; outputs: left HT- + right 6-char OR left 7688xxxx + right 4-digit)
- - SENSIENT: encrypt: single mainInput (8 chars: 2D 2L 4D) -> output: HT- (left) + 6char (right)
-             decrypt: input left fixed HT-, right 6char -> output single combined 8-char shown in 'output' field (prefixOutput hidden)
-*/
-
 const algoRadios = document.querySelectorAll('input[name="algo"]');
 const opRadios = document.querySelectorAll('input[name="operation"]');
 const prefixInput = document.getElementById('prefixInput');
@@ -131,13 +122,11 @@ function setToADM_decrypt(){
 }
 
 function setToSensient_encrypt(){
-  // input: single mainInput of length 8 (2D2L4D)
   prefixInput.style.display='none';
   mainInput.style.display='inline-block';
   mainInput.maxLength=8;
   mainInput.placeholder='2数字+2字母+4数字 (如: 08AB1234)';
   mainInput.value='';
-  // output must show left HT- and right 6char
   prefixOutput.style.display='inline-block';
   prefixOutput.value='HT-';
   output.value='';
@@ -147,7 +136,6 @@ function setToSensient_encrypt(){
 }
 
 function setToSensient_decrypt(){
-  // input: left HT- fixed + right 6char
   prefixInput.style.display='inline-block';
   prefixInput.readOnly=true;
   prefixInput.value='HT-';
@@ -155,7 +143,6 @@ function setToSensient_decrypt(){
   mainInput.maxLength=6;
   mainInput.placeholder='6位编码';
   mainInput.value='';
-  // output: single combined 8-char (we'll show in the single output textbox, and hide prefixOutput visually)
   prefixOutput.style.display='none';
   output.value='';
   hint.textContent='森鑫 解密：左侧固定 HT-，右侧输入 6 位编码，输出恢复 8 位原始。';
@@ -169,7 +156,7 @@ function updateUI(){
   if(algo === 'ADM'){
     if(op === 'encrypt') setToADM_encrypt();
     else setToADM_decrypt();
-  } else { // SENSIENT
+  } else {
     if(op === 'encrypt') setToSensient_encrypt();
     else setToSensient_decrypt();
   }
@@ -201,37 +188,43 @@ function compute(){
       if(op === 'encrypt'){
         if(!/^\d{4}$/.test(inp)){ alert('ADM 加密：右侧请输入4位数字'); return; }
         const leftFull = prefixInput.value.trim();
-        const code = admEncrypt(leftFull, inp); // ADM.js 提供 admEncrypt
+        const code = admEncrypt(leftFull, inp);
         prefixOutput.value='HT-';
         output.value = code;
         flash('#4cafef');
         logEntry('ADM encrypt', leftFull + '+' + inp, 'HT-' + code);
       } else {
         if(!/^[A-HJ-NP-Z2-9]{6}$/.test(inp)){ alert('ADM 解密：请输入6位合法编码'); return; }
-        const res = admDecrypt(inp); // ADM.js 提供 admDecrypt -> {left,right}
+        const res = admDecrypt(inp);
         prefixOutput.value = res.left;
         output.value = res.right;
         flash('#ff7043');
-        logEntry('ADM decrypt', 'HT-' + inp, res.left + '+' + res.right);
+        logEntry('ADM decrypt', 'HT-' + inp, res.left + '+' +res.right);
       }
     } else { // SENSIENT
       if(op === 'encrypt'){
-        if(!/^\d{2}[A-Z]{2}\d{4}$/.test(inp)){ alert('森鑫 加密：请输入 2数字+2字母+4数字（例如 08AB1234）'); return; }
+        if(!/^\d{2}[A-Z]{2}\d{4}$/.test(inp)){
+          alert('森鑫 加密：请输入 2数字+2字母+4数字（例如 08AB1234）'); 
+          return; 
+        }
         const code = sensientEncrypt(inp, 'ht1416'); // SENSIENT.js 提供 sensientEncrypt
+        // 修正：加密输出右边不重复 HT-
         prefixOutput.value='HT-';
         output.value = code;
         flash('#4cafef');
         logEntry('Sensient encrypt', inp, 'HT-' + code);
       } else {
-        if(!/^[A-HJ-NP-Z2-9]{6}$/.test(inp)){ alert('森鑫 解密：请输入6位合法编码'); return; }
-        const orig = sensientDecrypt(inp, 'ht1416'); // returns original 8-char
-        // show the single combined result in output; prefixOutput hidden by UI
-        output.value = orig;
+        if(!/^[A-HJ-NP-Z2-9]{6}$/.test(inp)){
+          alert('森鑫 解密：请输入6位合法编码'); 
+          return; 
+        }
+        const orig = sensientDecrypt(inp, 'ht1416'); // SENSIENT.js 提供 sensientDecrypt，返回原始8位
+        output.value = orig; // 仅显示解密结果
         flash('#ff7043');
         logEntry('Sensient decrypt', 'HT-' + inp, orig);
       }
     }
-  }catch(e){
+  } catch(e){
     console.error(e);
     alert('操作失败：' + (e && e.message ? e.message : '未知错误'));
   }
