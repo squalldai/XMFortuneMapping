@@ -1,162 +1,242 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>加解密工具 3.2</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>华添香精编号加解密工具 v3.2</title>
 <style>
-/* 保留原 3.2 的 CSS 样式 */
-body { font-family: Arial, sans-serif; background:#f0f2f5; margin:0; padding:0; }
-header { background:#333; color:#fff; text-align:center; padding:10px;}
-.container { max-width:600px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,0.08);}
-.section { margin-bottom:20px;}
-.section label { font-weight:bold; display:block; margin-bottom:6px;}
-.input-row { display:flex; gap:6px; margin-bottom:10px;}
-.input-row input { flex:1; padding:8px; border:1px solid #ccc; border-radius:6px; text-align:center;}
-.button { padding:8px 16px; border:none; border-radius:6px; cursor:pointer; background:#4cafef; color:#fff;}
-.button.decrypt { background:#ff7043;}
-.output { background:#fdfdfd; padding:10px; border-radius:6px; font-family:monospace;}
-.log { max-height:200px; overflow-y:auto; background:#222; color:#0f0; font-family:monospace; font-size:12px; padding:10px; border-radius:6px;}
+body { font-family: Arial, sans-serif; background:#f0f2f5; margin:0; padding:0; text-align:center; }
+header { background: linear-gradient(135deg,#ffecd2,#fcb69f); height:10vh; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700; color:#333; }
+.container { max-width:500px; margin:10px auto; padding:16px; background:#fff; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.08); display:flex; flex-direction:column; gap:14px; }
+.description { font-size:0.8rem; color:#555; font-style:italic; background:#fafafa; padding:6px; border-radius:6px; text-align:left; }
+.section-title { font-size:0.95rem; font-weight:700; margin:6px 0 4px 0; color:#333; text-align:left; }
+.radio-group { display:flex; gap:12px; align-items:center; }
+.io-block { display:flex; flex-direction:column; align-items:flex-start; gap:6px; width:100%; }
+.io-label { font-weight:700; color:#444; }
+.input-row { display:flex; gap:6px; width:100%; align-items:center; }
+.prefix-input, input[type=text] { border-radius:6px; border:1px solid #ccc; padding:8px; font-size:1rem; text-align:center; }
+.prefix-input { width:90px; }
+input[type=text] { flex:1; }
+.buttons { display:flex; justify-content:center; margin:8px 0; }
+button { padding:8px 16px; border:none; border-radius:8px; font-size:0.95rem; cursor:pointer; transition:all .18s; display:flex; align-items:center; gap:6px; }
+button:disabled { opacity:.5; cursor:not-allowed; }
+.flash-container { border-radius:12px; padding:12px; background:#fdfdfd; transition:background .25s; }
+#log { margin-top:8px; text-align:left; font-size:0.8rem; max-height:180px; overflow-y:auto; border-top:1px solid #eee; padding-top:6px; color:#333; }
+.small { font-size:0.78rem; color:#666; text-align:left; }
 </style>
 </head>
 <body>
-<header><h1>加解密工具 3.2</h1></header>
+<header>华添香精编号加解密工具 v3.2</header>
+
 <div class="container">
+  <div class="description">
+    <div><strong>说明</strong>：ADM 保持原有 UI/逻辑。森鑫（Sensient）为 8 位输入（格式：2数字+2字母+4数字）↔ 6 位编码，种子固定 <code>ht1416</code>。</div>
+    <div class="small">切换算法后输入/输出框会自动适配对应校验规则。</div>
+  </div>
 
-<div class="section">
-<label>模式选择</label>
-<div class="radio-group">
-<label><input type="radio" name="mode" value="adm" checked> ADM</label>
-<label><input type="radio" name="mode" value="sensient"> 森馨</label>
-</div>
+  <div class="section-title">算法选择</div>
+  <div class="radio-group">
+    <label><input type="radio" name="algo" value="ADM" checked> ADM</label>
+    <label><input type="radio" name="algo" value="SENSIENT"> 森鑫</label>
+  </div>
+
+  <div class="section-title">操作</div>
+  <div class="radio-group">
+    <label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
+    <label><input type="radio" name="operation" value="decrypt"> 解密</label>
+  </div>
+
+  <div class="flash-container" id="ioContainer">
+    <div class="io-block">
+      <span class="io-label">输入</span>
+
+      <!-- input row: for ADM show two inputs (prefixInput + mainInput); for SENSIENT show either single mainInput (encrypt) or prefixInput 'HT-' plus mainInput (decrypt) -->
+      <div class="input-row" id="inputRow">
+        <input type="text" id="prefixInput" class="prefix-input" value="76880800" />
+        <input type="text" id="mainInput" maxlength="4" placeholder="4位数字" />
+      </div>
+      <div class="small" id="hint" style="display:block; margin-top:6px;"></div>
+    </div>
+
+    <div class="buttons">
+      <button id="computeBtn" onclick="compute()">🔒 计算</button>
+    </div>
+
+    <div class="io-block">
+      <span class="io-label">输出</span>
+      <div class="input-row" id="outputRow">
+        <input type="text" id="prefixOutput" class="prefix-input" value="HT-" readonly />
+        <input type="text" id="output" readonly placeholder="6位字符 / 解密结果" />
+      </div>
+    </div>
+  </div>
+
+  <div id="log"></div>
 </div>
 
-<div class="section">
-<label>操作选择</label>
-<div class="radio-group">
-<label><input type="radio" name="operation" value="encrypt" checked> 加密</label>
-<label><input type="radio" name="operation" value="decrypt"> 解密</label>
-</div>
-</div>
-
-<div class="section" id="input-section">
-<label>输入</label>
-<div class="input-row">
-<input type="text" id="input-left" value="76880800">
-<input type="text" id="input-right" placeholder="右侧输入">
-</div>
-</div>
-
-<div class="section">
-<button id="action-button" class="button">执行</button>
-</div>
-
-<div class="section">
-<label>输出</label>
-<div id="output" class="output"></div>
-</div>
-
-<div class="section">
-<label>操作日志</label>
-<div id="log" class="log"></div>
-</div>
-</div>
-
+<!-- 请把 ADM.js 放在同目录 -->
 <script src="ADM.js"></script>
 <script src="SENSIENT.js"></script>
-<script>
-// 保留原 3.2 的 UI 逻辑，只改接口调用
-const modeRadios = document.getElementsByName("mode");
-const operationRadios = document.getElementsByName("operation");
-const inputLeft = document.getElementById("input-left");
-const inputRight = document.getElementById("input-right");
-const actionButton = document.getElementById("action-button");
-const outputDiv = document.getElementById("output");
-const logDiv = document.getElementById("log");
 
-function log(message){
-    const now = new Date();
-    const ts = now.toLocaleTimeString();
-    logDiv.innerHTML = `[${ts}] ${message}<br>` + logDiv.innerHTML;
+<script>
+/* UI behavior:
+ - ADM: unchanged (encrypt: left=7688xxxx editable + right 4 digits; decrypt: left=HT- fixed, right 6-char; outputs: left HT- + right 6-char OR left 7688xxxx + right 4-digit)
+ - SENSIENT: encrypt: single mainInput (8 chars: 2D 2L 4D) -> output: HT- (left) + 6char (right)
+             decrypt: input left fixed HT-, right 6char -> output single combined 8-char shown in 'output' field (prefixOutput hidden)
+*/
+
+const algoRadios = document.querySelectorAll('input[name="algo"]');
+const opRadios = document.querySelectorAll('input[name="operation"]');
+const prefixInput = document.getElementById('prefixInput');
+const mainInput = document.getElementById('mainInput');
+const prefixOutput = document.getElementById('prefixOutput');
+const output = document.getElementById('output');
+const inputRow = document.getElementById('inputRow');
+const outputRow = document.getElementById('outputRow');
+const ioContainer = document.getElementById('ioContainer');
+const hint = document.getElementById('hint');
+const computeBtn = document.getElementById('computeBtn');
+const logEl = document.getElementById('log');
+
+function setToADM_encrypt(){
+  prefixInput.style.display='inline-block';
+  prefixInput.readOnly=false;
+  prefixInput.value='76880800';
+  mainInput.style.display='inline-block';
+  mainInput.maxLength=4;
+  mainInput.placeholder='4位数字';
+  mainInput.value='';
+  prefixOutput.style.display='inline-block';
+  prefixOutput.value='HT-';
+  output.value='';
+  hint.textContent='ADM 加密：左输入 7688+后4位（可编辑），右输入 4 位数字。';
+  computeBtn.style.background='#4cafef';
+  computeBtn.innerText='🔒 计算';
+}
+
+function setToADM_decrypt(){
+  prefixInput.style.display='inline-block';
+  prefixInput.readOnly=true;
+  prefixInput.value='HT-';
+  mainInput.style.display='inline-block';
+  mainInput.maxLength=6;
+  mainInput.placeholder='6位字符';
+  mainInput.value='';
+  prefixOutput.style.display='inline-block';
+  prefixOutput.value='';
+  output.value='';
+  hint.textContent='ADM 解密：左侧固定 HT-，右侧输入 6 位编码。';
+  computeBtn.style.background='#ff7043';
+  computeBtn.innerText='🔓 计算';
+}
+
+function setToSensient_encrypt(){
+  // input: single mainInput of length 8 (2D2L4D)
+  prefixInput.style.display='none';
+  mainInput.style.display='inline-block';
+  mainInput.maxLength=8;
+  mainInput.placeholder='2数字+2字母+4数字 (如: 08AB1234)';
+  mainInput.value='';
+  // output must show left HT- and right 6char
+  prefixOutput.style.display='inline-block';
+  prefixOutput.value='HT-';
+  output.value='';
+  hint.textContent='森鑫 加密：输入格式 2数字+2字母+4数字（共8位）。';
+  computeBtn.style.background='#4cafef';
+  computeBtn.innerText='🔒 计算';
+}
+
+function setToSensient_decrypt(){
+  // input: left HT- fixed + right 6char
+  prefixInput.style.display='inline-block';
+  prefixInput.readOnly=true;
+  prefixInput.value='HT-';
+  mainInput.style.display='inline-block';
+  mainInput.maxLength=6;
+  mainInput.placeholder='6位编码';
+  mainInput.value='';
+  // output: single combined 8-char (we'll show in the single output textbox, and hide prefixOutput visually)
+  prefixOutput.style.display='none';
+  output.value='';
+  hint.textContent='森鑫 解密：左侧固定 HT-，右侧输入 6 位编码，输出恢复 8 位原始。';
+  computeBtn.style.background='#ff7043';
+  computeBtn.innerText='🔓 计算';
 }
 
 function updateUI(){
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    const operation = document.querySelector('input[name="operation"]:checked').value;
-
-    if(mode==="adm"){
-        if(operation==="encrypt"){
-            inputLeft.style.display="inline-block";
-            inputLeft.value="76880800";
-            inputLeft.disabled=false;
-            inputRight.placeholder="输入4位数字";
-            actionButton.className="button";
-            actionButton.textContent="加密 🔒";
-        }else{
-            inputLeft.style.display="inline-block";
-            inputLeft.value="HT-";
-            inputLeft.disabled=true;
-            inputRight.placeholder="输入6位编码";
-            actionButton.className="button decrypt";
-            actionButton.textContent="解密 🔓";
-        }
-    }else if(mode==="sensient"){
-        if(operation==="encrypt"){
-            inputLeft.style.display="none";
-            inputRight.placeholder="输入8位 (2数字+2字母+4数字)";
-            inputRight.value="";
-            actionButton.className="button";
-            actionButton.textContent="加密 🔒";
-        }else{
-            inputLeft.style.display="inline-block";
-            inputLeft.value="HT-";
-            inputLeft.disabled=true;
-            inputRight.placeholder="输入6位编码";
-            inputRight.value="";
-            actionButton.className="button decrypt";
-            actionButton.textContent="解密 🔓";
-        }
-    }
-    outputDiv.textContent="";
+  const algo = document.querySelector('input[name="algo"]:checked').value;
+  const op = document.querySelector('input[name="operation"]:checked').value;
+  if(algo === 'ADM'){
+    if(op === 'encrypt') setToADM_encrypt();
+    else setToADM_decrypt();
+  } else { // SENSIENT
+    if(op === 'encrypt') setToSensient_encrypt();
+    else setToSensient_decrypt();
+  }
+  ioContainer.style.background='#fdfdfd';
 }
 
-actionButton.addEventListener("click",()=>{
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    const operation = document.querySelector('input[name="operation"]:checked').value;
-
-    if(mode==="adm"){
-        if(operation==="encrypt"){
-            const left=inputLeft.value;
-            const right=inputRight.value;
-            const result=admEncrypt(left+right);
-            outputDiv.textContent=result;
-            log(`操作:ADM encrypt 输入:${left}+${right} → 输出:${result}`);
-        }else{
-            const left=inputLeft.value;
-            const right=inputRight.value;
-            const result=admDecrypt(left+right);
-            outputDiv.textContent=result;
-            log(`操作:ADM decrypt 输入:${left}+${right} → 输出:${result}`);
-        }
-    }else if(mode==="sensient"){
-        if(operation==="encrypt"){
-            const input=inputRight.value;
-            const result=sensientEncrypt(input);
-            outputDiv.textContent=result;
-            log(`操作:Sensient encrypt 输入:${input} → 输出:${result}`);
-        }else{
-            const input=inputLeft.value+inputRight.value;
-            const result=sensientDecrypt(input);
-            outputDiv.textContent=result;
-            log(`操作:Sensient decrypt 输入:${input} → 输出:${result}`);
-        }
-    }
-});
-
-modeRadios.forEach(radio=>radio.addEventListener("change",updateUI));
-operationRadios.forEach(radio=>radio.addEventListener("change",updateUI));
-
+algoRadios.forEach(r => r.addEventListener('change', updateUI));
+opRadios.forEach(r => r.addEventListener('change', updateUI));
 updateUI();
+
+function flash(color){
+  ioContainer.style.background = color + '33';
+  setTimeout(()=> ioContainer.style.background = color + '22', 260);
+  setTimeout(()=> ioContainer.style.background = '#fdfdfd', 900);
+}
+
+function logEntry(op, inp, out){
+  const t = new Date().toLocaleTimeString();
+  const msg = `[${t}] 操作:${op} 输入:${inp} → 输出:${out}`;
+  logEl.innerHTML = `<div>${msg}</div>` + logEl.innerHTML;
+}
+
+function compute(){
+  const algo = document.querySelector('input[name="algo"]:checked').value;
+  const op = document.querySelector('input[name="operation"]:checked').value;
+  const inp = mainInput.value.trim().toUpperCase();
+  try{
+    if(algo === 'ADM'){
+      if(op === 'encrypt'){
+        if(!/^\d{4}$/.test(inp)){ alert('ADM 加密：右侧请输入4位数字'); return; }
+        const leftFull = prefixInput.value.trim();
+        const code = admEncrypt(leftFull, inp); // ADM.js 提供 admEncrypt
+        prefixOutput.value='HT-';
+        output.value = code;
+        flash('#4cafef');
+        logEntry('ADM encrypt', leftFull + '+' + inp, 'HT-' + code);
+      } else {
+        if(!/^[A-HJ-NP-Z2-9]{6}$/.test(inp)){ alert('ADM 解密：请输入6位合法编码'); return; }
+        const res = admDecrypt(inp); // ADM.js 提供 admDecrypt -> {left,right}
+        prefixOutput.value = res.left;
+        output.value = res.right;
+        flash('#ff7043');
+        logEntry('ADM decrypt', 'HT-' + inp, res.left + '+' + res.right);
+      }
+    } else { // SENSIENT
+      if(op === 'encrypt'){
+        if(!/^\d{2}[A-Z]{2}\d{4}$/.test(inp)){ alert('森鑫 加密：请输入 2数字+2字母+4数字（例如 08AB1234）'); return; }
+        const code = sensientEncrypt(inp, 'ht1416'); // SENSIENT.js 提供 sensientEncrypt
+        prefixOutput.value='HT-';
+        output.value = code;
+        flash('#4cafef');
+        logEntry('Sensient encrypt', inp, 'HT-' + code);
+      } else {
+        if(!/^[A-HJ-NP-Z2-9]{6}$/.test(inp)){ alert('森鑫 解密：请输入6位合法编码'); return; }
+        const orig = sensientDecrypt(inp, 'ht1416'); // returns original 8-char
+        // show the single combined result in output; prefixOutput hidden by UI
+        output.value = orig;
+        flash('#ff7043');
+        logEntry('Sensient decrypt', 'HT-' + inp, orig);
+      }
+    }
+  }catch(e){
+    console.error(e);
+    alert('操作失败：' + (e && e.message ? e.message : '未知错误'));
+  }
+}
 </script>
+
 </body>
 </html>
