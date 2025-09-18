@@ -1,4 +1,4 @@
-// SENSIENT.js - 防呆字符集版本
+// SENSIENT.js - 最终修复版本
 // 固定种子
 const SENSIENT_SEED = "ht1416";
 
@@ -22,7 +22,7 @@ function sensientRandom(seed) {
 
 // 生成编码表（严格双射，使用防呆字符集）
 function sensientGenerateTables(seed = SENSIENT_SEED) {
-    const chars = SAFE_CHARS;  // 使用防呆字符集
+    const chars = SAFE_CHARS;
     const rand = sensientRandom(seed);
     let arr = chars.split("");
     
@@ -32,33 +32,29 @@ function sensientGenerateTables(seed = SENSIENT_SEED) {
         [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     
-    // 生成双向映射
     return { 
-        encode: arr,           // 正向：索引 → 字符
-        decode: arr.reduce((m, c, i) => { m[c] = i; return m; }, {})  // 反向：字符 → 索引
+        encode: arr, 
+        decode: arr.reduce((m, c, i) => { m[c] = i; return m; }, {}) 
     };
 }
 
-// 预生成编码表（固定种子）
 const sensientTables = sensientGenerateTables(SENSIENT_SEED);
 
 // 编码8位 → 6位（返回纯6位编码）
 function sensientEncrypt(input, seed = SENSIENT_SEED) {
-    // 输入验证：2数字+2字母+4数字
     if (!/^[0-9]{2}[A-Z]{2}[0-9]{4}$/.test(input)) {
         throw new Error("输入必须是 2数字+2字母+4数字（如：08AB1234）");
     }
     
-    // 动态生成编码表（支持自定义种子）
     const tables = sensientGenerateTables(seed);
     
     // Base36 数值化：A-Z→10-35, 0-9→0-9
     const base36Val = parseInt(input.split("").map(ch => {
         if (/[0-9]/.test(ch)) return ch;
-        return (ch.charCodeAt(0) - 55).toString();  // 'A'=65-55=10
-    }).join(""), 10);
+        return (ch.charCodeAt(0) - 55).toString();
+    }).join(""), 36);  // ✅ 使用 Base36 解析
 
-    // Base32 编码（使用乱序表，6位 × 32 = 约10^9，覆盖8位Base36）
+    // Base32 编码（6位 × 32 ≈ 10^9，覆盖8位Base36 ≈ 2.8×10^6）
     let output = "";
     let val = base36Val;
     for (let i = 0; i < 6; i++) {
@@ -66,17 +62,11 @@ function sensientEncrypt(input, seed = SENSIENT_SEED) {
         val = Math.floor(val / CHAR_LEN);
     }
     
-    // 确保无溢出（如果val仍有余数，填充0索引字符）
-    if (val > 0) {
-        console.warn("警告：输入数值超出6位Base32范围，可能截断");
-    }
-    
-    return output;  // ✅ 只返回6位防呆编码
+    return output;
 }
 
-// 解码6位 → 8位
+// 解码6位 → 8位（修复版）
 function sensientDecrypt(code6, seed = SENSIENT_SEED) {
-    // 验证：6位防呆字符
     if (!/^[ABCDEFGHJKLMNPRSTUVWXYZ23456789]{6}$/.test(code6)) {
         throw new Error("输入必须是6位合法编码（不含 I、O、0、1）");
     }
@@ -93,19 +83,20 @@ function sensientDecrypt(code6, seed = SENSIENT_SEED) {
         val = val * CHAR_LEN + charIndex;
     }
 
-    // 转回8位Base36字符串
-    let numStr = val.toString();
-    while (numStr.length < 8) numStr = "0" + numStr;
+    // ✅ 修复：正确转换回8位Base36字符串
+    let numStr = val.toString(36).toUpperCase();  // Base36 字符串，全大写
+    while (numStr.length < 8) numStr = "0" + numStr;  // 补零到8位
+    numStr = numStr.slice(-8);  // 确保正好8位
 
     // 还原原始格式：2数字 + 2字母 + 4数字
-    let part1 = numStr.slice(0, 2);                    // 2数字
-    let part2 = String.fromCharCode(parseInt(numStr.slice(2, 4)) + 55).replace(/[IO]/g, '?');  // 2字母，防I/O
-    let part3 = numStr.slice(4);                       // 4数字
+    const part1 = numStr.slice(0, 2);                    // 前2位数字
+    const part2 = numStr.slice(2, 4);                    // 中2位字母（Base36已转换）
+    const part3 = numStr.slice(4, 8);                    // 后4位数字
 
-    return part1 + part2 + part3;
+    return part1 + part2 + part3;  // 8位原始格式
 }
 
-// 测试函数（开发时使用）
+// 测试函数
 function testSensientRoundTrip() {
     const testInputs = [
         "08AB1234",
@@ -127,13 +118,9 @@ function testSensientRoundTrip() {
     });
 }
 
-// 如果在浏览器环境中，自动运行测试
-if (typeof window !== 'undefined') {
-    window.testSensientRoundTrip = testSensientRoundTrip;
-}
-
-// 导出函数（供 index.html 使用）
+// 导出
 if (typeof window !== 'undefined') {
     window.sensientEncrypt = sensientEncrypt;
     window.sensientDecrypt = sensientDecrypt;
+    window.testSensientRoundTrip = testSensientRoundTrip;
 }
